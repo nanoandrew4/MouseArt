@@ -1,8 +1,11 @@
+/*
+    Records all mouse movement and adds operations for the ImageHandler thread to process
+ */
+
 import java.awt.*;
 
 public class ImageRecorder extends Thread{
 
-    private boolean recording = true;
     private Point prevLocation = MouseInfo.getPointerInfo().getLocation();
     private ImageHandler im;
 
@@ -12,15 +15,25 @@ public class ImageRecorder extends Thread{
 
     @Override
     public void run() {
+
+        float m = MouseArt.canvasSizeMultiplier;
+        long start = System.currentTimeMillis();
+        long diff;
+
         while(true) {
 
             Point location = MouseInfo.getPointerInfo().getLocation();
 
-            if (!recording)
+            // stop recording when recording state equals stopped
+            if (MouseArt.state == 's')
                 break;
-            if (!prevLocation.equals(location)) {
-                //System.out.println(location);
-                im.addOperation(location.x, location.y, prevLocation.x, prevLocation.y, 'l');
+            // when mouse is moving add linear operation
+            if (MouseArt.state == 'r' && !prevLocation.equals(location)) {
+                if ((diff = System.currentTimeMillis() - start) > 3000) {
+                    im.addOperation((int) (prevLocation.getX() - Math.cbrt(diff)), (int) prevLocation.getY(), (int) (prevLocation.getX() + Math.cbrt(diff)), (int) prevLocation.getY(), 'c');
+                }
+                start = System.currentTimeMillis();
+                im.addOperation((int)(location.x * m), (int)(location.y * m), (int)(prevLocation.x * m), (int)(prevLocation.y * m), 'l');
             }
             prevLocation = MouseInfo.getPointerInfo().getLocation();
             synchronized (this) {
@@ -31,9 +44,5 @@ public class ImageRecorder extends Thread{
                 }
             }
         }
-    }
-
-    public void setRecording(boolean recording) {
-        this.recording = recording;
     }
 }
