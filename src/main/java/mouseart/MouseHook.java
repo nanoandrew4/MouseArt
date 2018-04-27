@@ -6,7 +6,7 @@ import org.jnativehook.mouse.NativeMouseInputListener;
 public class MouseHook implements NativeMouseInputListener {
 	@Override
 	public void nativeMouseClicked(NativeMouseEvent nativeMouseEvent) {
-		System.out.println(nativeMouseEvent.getButton() + " clicked");
+//		System.out.println(nativeMouseEvent.getButton() + " clicked");
 	}
 
 	@Override

@@ -1,6 +1,7 @@
 package mouseart;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
@@ -16,17 +17,6 @@ import java.io.File;
 import java.io.IOException;
 
 /**
- * Set of states the ImageRecorder can be in. They are used to control the flow of the program.
- * RECORDING indicates the program is recording, which makes ImageRecorder to submit Operation objects to ImageDrawer,
- * to be drawn on to the canvas and the screen.
- * PAUSED indicates the program is not tracking the cursor, until resumed.
- * STOPPED indicates the program has stopped tracking the cursor and is finalizing the image, to save it and start anew.
- */
-enum State {
-	RECORDING, PAUSED, STOPPED
-}
-
-/**
  * Entry point for application.
  * Sets up the image recorder, which continuously tracks the mouse pointer and submits jobs for the drawer to carry out
  * on the canvas.
@@ -40,8 +30,9 @@ public class MouseArt extends Application {
 
 	static int screenWidth, screenHeight;
 	static int SCENE_WIDTH, SCENE_HEIGHT;
+	static boolean stageMinimized = false;
 
-	static State state = State.STOPPED; // Initially, not recording
+	static State state = State.STOPPED; // Initially not recording
 
 	public static void main(String[] args) {
 		launch(args);
@@ -77,11 +68,31 @@ public class MouseArt extends Application {
 
 		pane.getChildren().addAll(menuBar);
 
+		setStageListeners(primaryStage);
 		primaryStage.setScene(scene);
 		primaryStage.show();
 	}
 
-	private void startRecording() {
+	private void setStageListeners(Stage stage) {
+		// Cleanup if window is closed, ensure all threads end
+		stage.setOnCloseRequest(event -> {
+			state = State.STOPPED;
+			try {
+				if (ir != null)
+					ir.join();
+				if (im != null)
+					im.join();
+			} catch (Exception ignored) {}
+			Platform.exit();
+		});
+
+		// Track if program is minimized, no need to update UI unnecessarily
+		stage.iconifiedProperty().addListener((ov, t, t1) -> stageMinimized = t1);
+
+		//TODO: WHEN STAGE IS RESIZED, UI SCENE SHOULD UPDATE TO APPROPRIATE SIZE...
+	}
+
+	private void startRecording() { // TODO: WHEN RECORDING AFTER STOPPING, NEW CANVAS SHOULD APPEAR
 		state = State.RECORDING;
 		ImageView imageView = new ImageView();
 
@@ -113,9 +124,8 @@ public class MouseArt extends Application {
 			e.printStackTrace();
 		}
 
-		saveImage(stage);
-
-		pane = new Pane();
+		if (saveImage(stage))
+			pane = new Pane();
 	}
 
 	/**
@@ -124,7 +134,7 @@ public class MouseArt extends Application {
 	 *
 	 * @param stage JavaFX stage, required for FileChooser
 	 */
-	private void saveImage(Stage stage) {
+	private boolean saveImage(Stage stage) {
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.getExtensionFilters().addAll(
 				new FileChooser.ExtensionFilter("PNG Files (*.png)", "*.png")
@@ -136,9 +146,13 @@ public class MouseArt extends Application {
 		if (file != null) {
 			try {
 				ImageIO.write(im.getBufferedImage(), "PNG", file);
+				return true;
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
+
+		state = State.RECORDING;
+		return false;
 	}
 }

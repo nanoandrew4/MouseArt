@@ -27,6 +27,7 @@ public class ImageRecorder extends Thread {
 	public void run() {
 		Logger logger = Logger.getLogger(GlobalScreen.class.getPackage().getName());
 		logger.setLevel(Level.OFF);
+		logger.setUseParentHandlers(false);
 
 		try {
 			GlobalScreen.registerNativeHook();
@@ -36,8 +37,7 @@ public class ImageRecorder extends Thread {
 
 		GlobalScreen.addNativeMouseListener(new MouseHook());
 
-		long start = System.currentTimeMillis();
-		long diff;
+		long diff, start = System.currentTimeMillis();
 
 		while (MouseArt.state != mouseart.State.STOPPED) {
 			Point location = MouseInfo.getPointerInfo().getLocation();
@@ -49,14 +49,13 @@ public class ImageRecorder extends Thread {
 			 */
 			if (MouseArt.state == mouseart.State.RECORDING && !prevLocation.equals(location)) {
 				if ((diff = System.currentTimeMillis() - start) > 3000) {
-					im.addOperation((int) (prevLocation.getX() - Math.cbrt(diff)), (int) prevLocation.getY(),
-							(int) (prevLocation.getX() + Math.cbrt(diff)), (int) prevLocation.getY(), 'c');
+					im.addCircleOp(prevLocation.x, prevLocation.y, (int) Math.cbrt(diff));
 				}
 				if (mouseReleased) {
 					// draw filled circle of white!
 				}
 				start = System.currentTimeMillis();
-				im.addOperation(location.x, location.y, prevLocation.x, prevLocation.y, 'l');
+				im.addLineOp(location.x, location.y, prevLocation.x, prevLocation.y);
 			}
 			prevLocation = MouseInfo.getPointerInfo().getLocation();
 
