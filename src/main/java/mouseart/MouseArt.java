@@ -15,6 +15,7 @@ import javafx.stage.Stage;
 import javax.imageio.ImageIO;
 import java.io.File;
 import java.io.IOException;
+import java.util.Random;
 
 /**
  * Entry point for application.
@@ -25,11 +26,14 @@ public class MouseArt extends Application {
 	private ImageDrawer im;
 	private ImageRecorder ir;
 
+	public static Random rand = new Random();
+
 	private Pane pane;
 	private MenuItem startRecording, pauseRecording, stopRecording;
+	private ImageView imgView;
 
 	static int screenWidth, screenHeight;
-	static int SCENE_WIDTH, SCENE_HEIGHT;
+	static int sceneWidth, sceneHeight;
 	static boolean stageMinimized = false;
 
 	static State state = State.STOPPED; // Initially not recording
@@ -43,10 +47,10 @@ public class MouseArt extends Application {
 		screenWidth = (int) (Screen.getScreens().get(Screen.getScreens().size() - 1).getBounds().getMaxX());
 		screenHeight = (int) (Screen.getScreens().get(Screen.getScreens().size() - 1).getBounds().getMaxY());
 
-		SCENE_WIDTH = (int) (screenWidth * 0.25f);
-		SCENE_HEIGHT = (int) (screenHeight * 0.25f);
+		sceneWidth = (int) (screenWidth * 0.25f);
+		sceneHeight = (int) (screenHeight * 0.25f);
 
-		Scene scene = new Scene(pane = new Pane(), SCENE_WIDTH, SCENE_HEIGHT);
+		Scene scene = new Scene(pane = new Pane(), sceneWidth, sceneHeight);
 
 		MenuBar menuBar = new MenuBar();
 		menuBar.prefWidthProperty().bind(primaryStage.widthProperty());
@@ -66,7 +70,7 @@ public class MouseArt extends Application {
 
 		menuBar.getMenus().addAll(fileMenu);
 
-		pane.getChildren().addAll(menuBar);
+		pane.getChildren().addAll(imgView = new ImageView(), menuBar);
 
 		setStageListeners(primaryStage);
 		primaryStage.setScene(scene);
@@ -82,24 +86,29 @@ public class MouseArt extends Application {
 					ir.join();
 				if (im != null)
 					im.join();
-			} catch (Exception ignored) {}
+			} catch (Exception ignored) {
+			}
 			Platform.exit();
+			System.exit(0);
 		});
 
 		// Track if program is minimized, no need to update UI unnecessarily
 		stage.iconifiedProperty().addListener((ov, t, t1) -> stageMinimized = t1);
 
-		//TODO: WHEN STAGE IS RESIZED, UI SCENE SHOULD UPDATE TO APPROPRIATE SIZE...
+		// Track if UI is resized, and update scene size appropriately
+		stage.widthProperty().addListener((obs, oldVal, newVal) -> sceneWidth = newVal.intValue());
+		stage.heightProperty().addListener((obs, oldVal, newVal) -> sceneHeight = newVal.intValue());
 	}
 
-	private void startRecording() { // TODO: WHEN RECORDING AFTER STOPPING, NEW CANVAS SHOULD APPEAR
+	private void startRecording() {
+		if (state != State.STOPPED)
+			return;
 		state = State.RECORDING;
-		ImageView imageView = new ImageView();
 
-		(im = new ImageDrawer(screenWidth, screenHeight, imageView)).start();
+		pane.getChildren().set(0, imgView = new ImageView());
+
+		(im = new ImageDrawer(screenWidth, screenHeight, imgView)).start();
 		(ir = new ImageRecorder(im)).start();
-
-		pane.getChildren().add(0, imageView);
 	}
 
 	private void pauseRecording() {
@@ -113,8 +122,6 @@ public class MouseArt extends Application {
 	}
 
 	private void stopRecording(Stage stage) {
-		if (state == State.STOPPED)
-			return;
 		state = State.STOPPED;
 
 		try {
@@ -124,8 +131,7 @@ public class MouseArt extends Application {
 			e.printStackTrace();
 		}
 
-		if (saveImage(stage))
-			pane = new Pane();
+		saveImage(stage);
 	}
 
 	/**
@@ -134,25 +140,23 @@ public class MouseArt extends Application {
 	 *
 	 * @param stage JavaFX stage, required for FileChooser
 	 */
-	private boolean saveImage(Stage stage) {
+	private void saveImage(Stage stage) {
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.getExtensionFilters().addAll(
 				new FileChooser.ExtensionFilter("PNG Files (*.png)", "*.png")
 		);
+		fileChooser.setInitialFileName("test.png");
 
 		// Show system file chooser (choose file name and save destination)
 		File file = fileChooser.showSaveDialog(stage);
 
 		if (file != null) {
 			try {
-				ImageIO.write(im.getBufferedImage(), "PNG", file);
-				return true;
+				ImageIO.write(im.getBufferedImage(), "png", file);
+				pane.getChildren().set(0, imgView = new ImageView());
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
-
-		state = State.RECORDING;
-		return false;
 	}
 }

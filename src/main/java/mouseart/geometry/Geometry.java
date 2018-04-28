@@ -1,4 +1,5 @@
 package mouseart.geometry;
 
-public class Geometry {
+public abstract class Geometry {
+	public int alpha;
 }

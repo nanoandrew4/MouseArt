@@ -3,6 +3,8 @@ package mouseart;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import mouseart.color_scheme.ColorScheme;
+import mouseart.color_scheme.GrayScale;
 import mouseart.geometry.Circle;
 import mouseart.geometry.Geometry;
 import mouseart.geometry.Line;
@@ -10,18 +12,17 @@ import mouseart.geometry.Line;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayDeque;
-import java.util.Random;
 
 /**
  * Draws all operations submitted by ImageRecorder to the BufferedImage and updates the UI preview periodically.
  */
 public class ImageDrawer extends Thread {
-
 	private BufferedImage bi;
 	private ImageView imageView;
 
+	ColorScheme colorScheme = new GrayScale();
+
 	private ArrayDeque<Geometry> geometricDrawOps = new ArrayDeque<>();
-	private Random rand = new Random();
 
 	ImageDrawer(int screenWidth, int screenHeight, ImageView imageView) {
 		this.setDaemon(true);
@@ -31,7 +32,7 @@ public class ImageDrawer extends Thread {
 		bi = new BufferedImage(screenWidth, screenHeight, BufferedImage.TYPE_INT_ARGB);
 
 		// Fill in background with white (default is black)
-		Color bgColor = new Color(255, 255, 255);
+		Color bgColor = new Color(255, 255, 255, 255);
 		for (int y = 0; y < screenHeight; y++) {
 			for (int x = 0; x < screenWidth; x++) {
 				bi.setRGB(x, y, bgColor.getRGB());
@@ -54,7 +55,7 @@ public class ImageDrawer extends Thread {
 	}
 
 	/**
-	 * Submits a job to draw a circle, with a filled in inner circle. The operation will be carried out soon after
+	 * Submits a job to draw a circle. The operation will be carried out soon after
 	 * submission. This method takes a centre coordinate and radius for the desired circle, and adds a new instance of
 	 * a Circle object with these characteristics to the list of draw operations to be carried out.
 	 *
@@ -62,8 +63,8 @@ public class ImageDrawer extends Thread {
 	 * @param centreY Circle center on the y axis
 	 * @param radius  Radius of the circle
 	 */
-	protected void addCircleOp(int centreX, int centreY, int radius) {
-		geometricDrawOps.add(new Circle(centreX, centreY, radius));
+	protected void addCircleOp(int centreX, int centreY, int radius, boolean fill, Integer... alpha) {
+		geometricDrawOps.add(new Circle(centreX, centreY, radius, fill, alpha.length > 0 ? alpha[0] : 0));
 	}
 
 	BufferedImage getBufferedImage() {
@@ -75,7 +76,7 @@ public class ImageDrawer extends Thread {
 		long start = System.currentTimeMillis();
 
 		while (MouseArt.state != mouseart.State.STOPPED) {
-			if (!MouseArt.stageMinimized && System.currentTimeMillis() - start > 100) { // Update preview in UI thread
+			if (!MouseArt.stageMinimized && System.currentTimeMillis() - start > 50) { // Update preview in UI thread
 				start = System.currentTimeMillis();
 				imageView.setImage(convertToJFXImage());
 			}
@@ -102,9 +103,9 @@ public class ImageDrawer extends Thread {
 	 * @return Image that can be inserted into ImageView for JavaFX
 	 */
 	private Image convertToJFXImage() {
-		java.awt.Image image = bi.getScaledInstance(MouseArt.SCENE_WIDTH, MouseArt.SCENE_HEIGHT,
+		java.awt.Image image = bi.getScaledInstance(MouseArt.sceneWidth, MouseArt.sceneHeight,
 				java.awt.Image.SCALE_SMOOTH);
-		BufferedImage bi = new BufferedImage(MouseArt.SCENE_WIDTH, MouseArt.SCENE_HEIGHT, BufferedImage.TYPE_INT_RGB);
+		BufferedImage bi = new BufferedImage(MouseArt.sceneWidth, MouseArt.sceneHeight, BufferedImage.TYPE_INT_ARGB);
 
 		Graphics2D g = bi.createGraphics();
 		g.drawImage(image, 0, 0, null);
@@ -130,13 +131,13 @@ public class ImageDrawer extends Thread {
 		else
 			for (; Math.abs(l.endY - l.startY) / divisor > 1.0f; divisor++) ;
 
-		Color c = new Color(50, 50, 50);
+		Color lineColor = new Color(75, 75, 75);
 
 		float x = l.startX, y = l.startY;
 		// Draw line
 		while ((l.startX > l.endX && x >= l.endX) || (l.endX > l.startX && x <= l.endX)
 				|| (l.startY > l.endY && y >= l.endY) || (l.endY > l.startY && y <= l.endY)) {
-			bi.setRGB((int) x, (int) y, c.getRGB());
+			bi.setRGB((int) x, (int) y, lineColor.getRGB());
 
 			x += (l.endX - l.startX) / divisor;
 			y += (l.endY - l.startY) / divisor;
@@ -151,38 +152,20 @@ public class ImageDrawer extends Thread {
 	 * @param c Circle object, containing centre coordinates and a radius
 	 */
 	private void drawCircle(Circle c) {
-		int shadeOfGray = rand.nextInt(127);
-		Color arcColor = new Color(shadeOfGray, shadeOfGray, shadeOfGray);
+		float theta = 1.0f / c.radius;
 
-		for (float a = 0; a < 2 * Math.PI; a += Math.PI / 1000) { // TODO: SMALLER CIRCLE DOES NOT NEED REDRAWING PIXELS
-			for (int b = 0; b < 2; b++) {
-				int x = (int) (c.centerX + (Math.cos(a) * c.radius) / (b == 0 ? 1 : 10));
-				int y = (int) (c.centerY + (Math.sin(a) * c.radius) / (b == 0 ? 1 : 10));
-				if (x > 0 && x < MouseArt.screenWidth && y > 0 && y < MouseArt.screenHeight)
-					bi.setRGB(x, y, arcColor.getRGB());
-			}
-		}
+		Color circleColor = colorScheme.getColor(c, c.alpha);
 
-		c.radius /= 10; // Set radius to that of the inner circle
+		for (float a = 0; a < 2 * Math.PI; a += theta) {
+			int x = (int) (c.centerX - (Math.cos(a) * c.radius));
+			int y = (int) (c.centerY - (Math.sin(a) * c.radius));
+			if (x > 0 && x < MouseArt.screenWidth && y > 0 && y < MouseArt.screenHeight)
+				bi.setRGB(x, y, circleColor.getRGB());
 
-		// Fill inner circle
-		for (int y = c.centerY - c.radius; y < c.centerY + c.radius; y++) {
-			int start = 0, end = 0;
-			for (int a = c.centerX - c.radius; a < c.centerX; a++) {
-				if (a < 0 || bi.getRGB(a, y) == arcColor.getRGB()) {
-					start = a >= 0 ? a : 0;
-					for (int b = c.centerX; b < c.centerX + c.radius; b++) {
-						if (b >= MouseArt.screenWidth - 1 || bi.getRGB(b, y) == arcColor.getRGB()) {
-							end = b < MouseArt.screenWidth ? b : MouseArt.screenWidth - 1;
-							break;
-						}
-					}
-					break;
-				}
-			}
-
-			for (int x = start; x < end; x++)
-				bi.setRGB(x, y, arcColor.getRGB());
+			if (c.fill && x < c.centerX) // Only fill from left side of the circle
+				for (int l = 0; l < 2 * Math.abs(x - c.centerX); l++)
+					if (x > 0 && x < MouseArt.screenWidth && y > 0 && y < MouseArt.screenHeight)
+						bi.setRGB(x + l, y, circleColor.getRGB());
 		}
 	}
 }
