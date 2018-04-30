@@ -1,16 +1,11 @@
 package mouseart.color_scheme;
 
 import mouseart.MouseArt;
-import mouseart.geometry.Circle;
-import mouseart.geometry.Geometry;
 
 import java.awt.*;
 
 public class GrayScale implements ColorScheme{
-	public Color getColor(Geometry g, int alpha) {
-		if (g instanceof Circle)
-			return getRandGrayScale(alpha);
-		else
+	public Color getColor(int alpha) {
 			return new Color(0, 0, 0, alpha);
 	}
 
