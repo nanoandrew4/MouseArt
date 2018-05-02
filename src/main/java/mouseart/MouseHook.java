@@ -36,7 +36,7 @@ public class MouseHook implements NativeMouseInputListener {
 
 	@Override
 	public void nativeMouseMoved(NativeMouseEvent nativeMouseEvent) {
-		Point location = MouseInfo.getPointerInfo().getLocation();
+		Point location = nativeMouseEvent.getPoint();
 
 		/*
 		 * If the mouse has moved, draw a line between previous position and current position.
@@ -46,15 +46,15 @@ public class MouseHook implements NativeMouseInputListener {
 		if (MouseArt.state == mouseart.State.RECORDING) {
 			if (!prevLocation.equals(location)) {
 				if ((diff = System.currentTimeMillis() - lastMove) > 3000) {
-					int radius = (int) Math.sqrt(diff);
+					int radius = (int) diff;
 					drawCircle(prevLocation.x, prevLocation.y, radius, false);
 					drawCircle(prevLocation.x, prevLocation.y, radius / 10, true);
 				}
 				lastMove = System.currentTimeMillis();
-				drawLine(location.x, location.y, prevLocation.x, prevLocation.y);
+				drawLine(prevLocation.x, prevLocation.y, location.x, location.y);
 			}
 		}
-		prevLocation = MouseInfo.getPointerInfo().getLocation();
+		prevLocation = location;
 	}
 
 	@Override

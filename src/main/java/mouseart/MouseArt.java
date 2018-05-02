@@ -3,16 +3,17 @@ package mouseart;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
+import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.SnapshotParameters;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
-import javafx.scene.shape.Line;
+import javafx.scene.shape.ArcType;
 import javafx.scene.transform.Transform;
 import javafx.stage.FileChooser;
 import javafx.stage.Screen;
@@ -31,8 +32,6 @@ import java.util.logging.Logger;
 
 /**
  * Entry point for application.
- * Sets up the image recorder, which continuously tracks the mouse pointer and submits jobs for the drawer to carry out
- * on the canvas.
  */
 public class MouseArt extends Application {
 	private MouseHook mouseHook;
@@ -43,10 +42,13 @@ public class MouseArt extends Application {
 	private int sceneWidth, sceneHeight;
 	private boolean stageMinimized = false;
 
-	static State state = State.STOPPED; // Initially not recording
+	static State state = State.STOPPED;
 
 	private Scene geometryScene, previewScene;
-	private Pane geometryPane, previewPane;
+	private Group previewGroup;
+	private Canvas canvas;
+	private GraphicsContext gc;
+
 	private MenuBar menuBar;
 	private MenuItem startRecording, pauseRecording, stopRecording;
 	private ImageView geomPreview;
@@ -71,20 +73,18 @@ public class MouseArt extends Application {
 			e.printStackTrace();
 		}
 
-		GlobalScreen.addNativeMouseListener(mouseHook = new MouseHook(this));
-		GlobalScreen.addNativeMouseMotionListener(mouseHook);
-
+		// Get screen sizes, supports multiple monitors
 		screenWidth = (int) (Screen.getScreens().get(Screen.getScreens().size() - 1).getBounds().getMaxX());
 		screenHeight = (int) (Screen.getScreens().get(Screen.getScreens().size() - 1).getBounds().getMaxY());
 
-		sceneWidth = (int) (screenWidth * 0.25f);
-		sceneHeight = (int) (screenHeight * 0.25f);
+		sceneWidth = (int) (screenWidth * .25);
+		sceneHeight = (int) (screenHeight * .25);
 
-		geometryScene = new Scene(geometryPane = new Pane(), screenWidth, screenHeight);
-		previewScene = new Scene(previewPane = new Pane(), sceneWidth, sceneHeight);
+		geometryScene = new Scene(new Group(), screenWidth, screenHeight);
+		previewScene = new Scene(previewGroup = new Group(), sceneWidth, sceneHeight);
 
-		geomPreview = new ImageView();
-		snapshotParameters = new SnapshotParameters();
+		geomPreview = new ImageView(); // Resized view of the canvas will go in here as an Image
+		snapshotParameters = new SnapshotParameters(); // Update scene size with to determine resize of snapshot
 
 		menuBar = new MenuBar();
 		menuBar.prefWidthProperty().bind(primaryStage.widthProperty());
@@ -94,7 +94,7 @@ public class MouseArt extends Application {
 		});
 		menuBar.setOnMouseExited(event -> {
 			if (state == State.RECORDING)
-				menuBar.setOpacity(0.4);
+				menuBar.setOpacity(0.3);
 		});
 
 		Menu fileMenu = new Menu("File");
@@ -110,7 +110,7 @@ public class MouseArt extends Application {
 
 		fileMenu.getItems().addAll(startRecording, pauseRecording, stopRecording);
 		menuBar.getMenus().addAll(fileMenu);
-		previewPane.getChildren().addAll(menuBar);
+		previewGroup.getChildren().addAll(menuBar);
 
 		setStageListeners(primaryStage);
 		primaryStage.setScene(previewScene);
@@ -118,9 +118,8 @@ public class MouseArt extends Application {
 	}
 
 	private void refreshPreview() {
-		if (stageMinimized)
-			return;
-		geomPreview.setImage(geometryPane.snapshot(snapshotParameters, null));
+		if (stageMinimized) return;
+		geomPreview.setImage(canvas.snapshot(snapshotParameters, null));
 	}
 
 	/**
@@ -134,7 +133,9 @@ public class MouseArt extends Application {
 	 * @param endY   Line end coordinate on the y axis
 	 */
 	protected void addLineOp(int startX, int startY, int endX, int endY) {
-		geometryPane.getChildren().add(geometryPane.getChildren().size(), new Line(startX, startY, endX, endY));
+		gc.setStroke(Color.BLACK);
+		gc.setLineWidth(1);
+		gc.strokeLine(startX, startY, endX, endY);
 		refreshPreview();
 	}
 
@@ -147,19 +148,26 @@ public class MouseArt extends Application {
 	 * @param centreY Circle center on the y axis
 	 * @param radius  Radius of the circle
 	 */
-	protected void addCircleOp(int centreX, int centreY, int radius, boolean fill, Integer... alpha) {
-		Circle c = new Circle(centreX, centreY, radius);
-		c.setFill(fill ? Color.BLACK : Color.TRANSPARENT);
-		c.setStroke(Color.BLACK);
-		c.setStrokeWidth(1);
-		geometryPane.getChildren().add(geometryPane.getChildren().size(), c);
+	protected void addCircleOp(int centreX, int centreY, int radius, boolean fill) {
+		if (fill) {
+			gc.setFill(Color.BLACK);
+			gc.fillArc(centreX, centreY, radius, radius, 0, 360, ArcType.ROUND);
+		} else {
+			gc.setFill(Color.gray(1, 0.3));
+			gc.fillArc(centreX, centreY, radius, radius, 0, 360, ArcType.ROUND);
+		}
 		refreshPreview();
 	}
 
 	private void setStageListeners(Stage stage) {
 		// Cleanup if window is closed, ensure all threads end
 		stage.setOnCloseRequest(event -> {
-			requestThreadsStop();
+			state = State.STOPPED;
+			try {
+				GlobalScreen.unregisterNativeHook();
+			} catch (NativeHookException e) {
+				e.printStackTrace();
+			}
 			Platform.exit();
 			System.exit(0);
 		});
@@ -170,12 +178,16 @@ public class MouseArt extends Application {
 		// Track if UI is resized, and update previewScene size appropriately
 		previewScene.widthProperty().addListener((obs, oldVal, newVal) -> {
 			sceneWidth = newVal.intValue();
-			snapshotParameters.setTransform(Transform.scale(sceneWidth / (double) screenWidth, sceneHeight / (double) screenHeight));
+			snapshotParameters.setTransform(
+					Transform.scale(sceneWidth / (double) screenWidth, sceneHeight / (double) screenHeight)
+			);
 		});
 
 		previewScene.heightProperty().addListener((obs, oldVal, newVal) -> {
 			sceneHeight = newVal.intValue();
-			snapshotParameters.setTransform(Transform.scale(sceneWidth / (double) screenWidth, sceneHeight / (double) screenHeight));
+			snapshotParameters.setTransform(
+					Transform.scale(sceneWidth / (double) screenWidth, sceneHeight / (double) screenHeight)
+			);
 		});
 	}
 
@@ -186,10 +198,15 @@ public class MouseArt extends Application {
 
 		menuBar.setOpacity(0.5);
 
-		previewScene.setRoot(previewPane = new Pane(geomPreview, menuBar));
-		geometryScene.setRoot(geometryPane = new Pane());
+		previewScene.setRoot(previewGroup = new Group(geomPreview, menuBar));
+		canvas = new Canvas(screenWidth, screenHeight);
+		gc = canvas.getGraphicsContext2D();
+		geometryScene.setRoot(new Group(canvas));
 
+		mouseHook = new MouseHook(this);
 		mouseHook.prepForRecording();
+		GlobalScreen.addNativeMouseListener(mouseHook);
+		GlobalScreen.addNativeMouseMotionListener(mouseHook);
 	}
 
 	private void pauseRecording() {
@@ -202,13 +219,11 @@ public class MouseArt extends Application {
 		}
 	}
 
-	private void requestThreadsStop() {
-		state = State.STOPPED;
-	}
-
 	private void stopRecording(Stage stage) {
+		state = State.STOPPED;
+		GlobalScreen.removeNativeMouseMotionListener(mouseHook);
+		GlobalScreen.removeNativeMouseListener(mouseHook);
 		menuBar.setOpacity(1);
-		requestThreadsStop();
 		saveImage(stage);
 	}
 
@@ -230,7 +245,7 @@ public class MouseArt extends Application {
 
 		if (file != null) {
 			try {
-				ImageIO.write(SwingFXUtils.fromFXImage(geometryPane.snapshot(new SnapshotParameters(), null), null), "png", file);
+				ImageIO.write(SwingFXUtils.fromFXImage(canvas.snapshot(new SnapshotParameters(), null), null), "png", file);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
