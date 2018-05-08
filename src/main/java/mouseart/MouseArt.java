@@ -12,7 +12,6 @@ import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.image.ImageView;
-import javafx.scene.paint.Color;
 import javafx.scene.shape.ArcType;
 import javafx.scene.transform.Transform;
 import javafx.stage.FileChooser;
@@ -31,7 +30,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Entry point for application.
+ * Entry point for application. Takes care of all the rendering, and anything related to the UI.
  */
 public class MouseArt extends Application {
 	private MouseHook mouseHook;
@@ -55,7 +54,7 @@ public class MouseArt extends Application {
 
 	private SnapshotParameters snapshotParameters;
 
-	ColorScheme colorScheme = new GrayScale();
+	private ColorScheme colorScheme = new GrayScale();
 
 	public static void main(String[] args) {
 		launch(args);
@@ -118,7 +117,7 @@ public class MouseArt extends Application {
 	}
 
 	private void refreshPreview() {
-		if (stageMinimized) return;
+		if (stageMinimized || canvas == null) return;
 		geomPreview.setImage(canvas.snapshot(snapshotParameters, null));
 	}
 
@@ -127,13 +126,14 @@ public class MouseArt extends Application {
 	 * and ending coordinates, and adds a new instance of a Line object with these characteristics to the list of draw
 	 * operations to be carried out.
 	 *
-	 * @param startX Line start coordinate on the x axis
-	 * @param startY Line start coordinate on the y axis
-	 * @param endX   Line end coordinate on the x axis
-	 * @param endY   Line end coordinate on the y axis
+	 * @param drawEvent Determinant of color through use of color palette, depending on the figure being drawn
+	 * @param startX    Line start coordinate on the x axis
+	 * @param startY    Line start coordinate on the y axis
+	 * @param endX      Line end coordinate on the x axis
+	 * @param endY      Line end coordinate on the y axis
 	 */
-	protected void addLineOp(int startX, int startY, int endX, int endY) {
-		gc.setStroke(Color.BLACK);
+	protected void addLineOp(DrawEvent drawEvent, int startX, int startY, int endX, int endY) {
+		gc.setStroke(colorScheme.getColor(drawEvent));
 		gc.setLineWidth(1);
 		gc.strokeLine(startX, startY, endX, endY);
 		refreshPreview();
@@ -144,18 +144,16 @@ public class MouseArt extends Application {
 	 * submission. This method takes a centre coordinate and radius for the desired circle, and adds a new instance of
 	 * a Circle object with these characteristics to the list of draw operations to be carried out.
 	 *
-	 * @param centreX Circle center on the x axis
-	 * @param centreY Circle center on the y axis
-	 * @param radius  Radius of the circle
+	 * @param drawEvent Determinant of color through use of color palette, depending on the figure being drawn
+	 * @param centreX   Circle center on the x axis
+	 * @param centreY   Circle center on the y axis
+	 * @param radius    Radius of the circle
 	 */
-	protected void addCircleOp(int centreX, int centreY, int radius, boolean fill) {
-		if (fill) {
-			gc.setFill(Color.BLACK);
-			gc.fillArc(centreX, centreY, radius, radius, 0, 360, ArcType.ROUND);
-		} else {
-			gc.setFill(Color.gray(1, 0.3));
-			gc.fillArc(centreX, centreY, radius, radius, 0, 360, ArcType.ROUND);
-		}
+	protected void addCircleOp(DrawEvent drawEvent, int centreX, int centreY, int radius) {
+		gc.setFill(colorScheme.getColor(drawEvent));
+		gc.fillArc(centreX - radius / 2, centreY - radius / 2, radius, radius, 0, 360, ArcType.ROUND);
+		if (drawEvent == DrawEvent.MOVE_OUTER_CIRCLE)
+			gc.strokeArc(centreX - radius / 2, centreY - radius / 2, radius, radius, 0, 360, ArcType.OPEN);
 		refreshPreview();
 	}
 
@@ -181,6 +179,7 @@ public class MouseArt extends Application {
 			snapshotParameters.setTransform(
 					Transform.scale(sceneWidth / (double) screenWidth, sceneHeight / (double) screenHeight)
 			);
+			refreshPreview();
 		});
 
 		previewScene.heightProperty().addListener((obs, oldVal, newVal) -> {
@@ -188,6 +187,7 @@ public class MouseArt extends Application {
 			snapshotParameters.setTransform(
 					Transform.scale(sceneWidth / (double) screenWidth, sceneHeight / (double) screenHeight)
 			);
+			refreshPreview();
 		});
 	}
 
@@ -213,7 +213,7 @@ public class MouseArt extends Application {
 		if (state == State.RECORDING) {
 			state = State.PAUSED;
 			pauseRecording.setText("Resume");
-		} else {
+		} else if (state == State.PAUSED) {
 			state = State.RECORDING;
 			pauseRecording.setText("Pause");
 		}

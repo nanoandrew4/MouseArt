@@ -1,16 +1,21 @@
 package mouseart.color_scheme;
 
-import mouseart.MouseArt;
+import javafx.scene.paint.Color;
+import mouseart.DrawEvent;
 
-import java.awt.*;
-
-public class GrayScale implements ColorScheme{
-	public Color getColor(int alpha) {
-			return new Color(0, 0, 0, alpha);
-	}
-
-	private Color getRandGrayScale(int alpha) {
-		int shadeOfGray = MouseArt.rand.nextInt(150) + 50;
-		return new Color(shadeOfGray, shadeOfGray, shadeOfGray, alpha);
+public class GrayScale implements ColorScheme {
+	public Color getColor(DrawEvent drawEvent) {
+		switch (drawEvent) {
+			case LMOUSE_PRESS:
+				return Color.gray(Math.random() / 2.5, Math.random() / 2 + 0.5);
+			case MOVE_INNER_CIRCLE:
+				return Color.BLACK;
+			case MOVE_OUTER_CIRCLE:
+				return Color.gray(Math.random() / 4 + 0.75, Math.random() / 4);
+			case LINE:
+				return Color.BLACK;
+			default:
+				return Color.BLACK;
+		}
 	}
 }

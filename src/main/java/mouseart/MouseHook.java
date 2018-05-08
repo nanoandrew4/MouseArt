@@ -4,7 +4,8 @@ import javafx.application.Platform;
 import org.jnativehook.mouse.NativeMouseEvent;
 import org.jnativehook.mouse.NativeMouseInputListener;
 
-import java.awt.*;
+import java.awt.Point;
+import java.awt.MouseInfo;
 
 public class MouseHook implements NativeMouseInputListener {
 	private MouseArt mArt;
@@ -26,7 +27,7 @@ public class MouseHook implements NativeMouseInputListener {
 		if (mousePressed)
 			return;
 		mousePressed = true;
-		drawCircle(prevLocation.x, prevLocation.y, MouseArt.rand.nextInt(50) + 25, true);
+		drawCircle(DrawEvent.LMOUSE_PRESS, prevLocation.x, prevLocation.y, MouseArt.rand.nextInt(70) + 5);
 	}
 
 	@Override
@@ -46,9 +47,9 @@ public class MouseHook implements NativeMouseInputListener {
 		if (MouseArt.state == mouseart.State.RECORDING) {
 			if (!prevLocation.equals(location)) {
 				if ((diff = System.currentTimeMillis() - lastMove) > 3000) {
-					int radius = (int) diff;
-					drawCircle(prevLocation.x, prevLocation.y, radius, false);
-					drawCircle(prevLocation.x, prevLocation.y, radius / 10, true);
+					int radius = (int) Math.cbrt(diff);
+					drawCircle(DrawEvent.MOVE_OUTER_CIRCLE, location.x, location.y, radius);
+					drawCircle(DrawEvent.MOVE_INNER_CIRCLE, location.x, location.y, radius / 10);
 				}
 				lastMove = System.currentTimeMillis();
 				drawLine(prevLocation.x, prevLocation.y, location.x, location.y);
@@ -67,10 +68,10 @@ public class MouseHook implements NativeMouseInputListener {
 	}
 
 	private void drawLine(int startX, int startY, int endX, int endY) {
-		Platform.runLater(() -> mArt.addLineOp(startX, startY, endX, endY));
+		Platform.runLater(() -> mArt.addLineOp(DrawEvent.LINE, startX, startY, endX, endY));
 	}
 
-	private void drawCircle(int centreX, int centreY, int radius, boolean fill) {
-		Platform.runLater(() -> mArt.addCircleOp(centreX, centreY, radius, fill));
+	private void drawCircle(DrawEvent drawEvent, int centreX, int centreY, int radius) {
+		Platform.runLater(() -> mArt.addCircleOp(drawEvent, centreX, centreY, radius));
 	}
 }
