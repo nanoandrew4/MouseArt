@@ -19,6 +19,7 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 import mouseart.color_scheme.ColorScheme;
 import mouseart.color_scheme.GrayScale;
+import mouseart.color_scheme.RGBScale;
 import org.jnativehook.GlobalScreen;
 import org.jnativehook.NativeHookException;
 
@@ -54,7 +55,8 @@ public class MouseArt extends Application {
 
 	private SnapshotParameters snapshotParameters;
 
-	private ColorScheme colorScheme = new GrayScale();
+//	private ColorScheme colorScheme = new GrayScale();
+	private ColorScheme colorScheme = new RGBScale();
 
 	public static void main(String[] args) {
 		launch(args);
@@ -122,9 +124,7 @@ public class MouseArt extends Application {
 	}
 
 	/**
-	 * Submits a job to draw a line. The line will be drawn soon after submission. This method takes a set of starting
-	 * and ending coordinates, and adds a new instance of a Line object with these characteristics to the list of draw
-	 * operations to be carried out.
+	 * Draws a line on the canvas.
 	 *
 	 * @param drawEvent Determinant of color through use of color palette, depending on the figure being drawn
 	 * @param startX    Line start coordinate on the x axis
@@ -132,7 +132,7 @@ public class MouseArt extends Application {
 	 * @param endX      Line end coordinate on the x axis
 	 * @param endY      Line end coordinate on the y axis
 	 */
-	protected void addLineOp(DrawEvent drawEvent, int startX, int startY, int endX, int endY) {
+	protected void drawLine(DrawEvent drawEvent, int startX, int startY, int endX, int endY) {
 		gc.setStroke(colorScheme.getColor(drawEvent));
 		gc.setLineWidth(1);
 		gc.strokeLine(startX, startY, endX, endY);
@@ -140,16 +140,14 @@ public class MouseArt extends Application {
 	}
 
 	/**
-	 * Submits a job to draw a circle. The operation will be carried out soon after
-	 * submission. This method takes a centre coordinate and radius for the desired circle, and adds a new instance of
-	 * a Circle object with these characteristics to the list of draw operations to be carried out.
+	 * Draws a circle on the canvas.
 	 *
 	 * @param drawEvent Determinant of color through use of color palette, depending on the figure being drawn
 	 * @param centreX   Circle center on the x axis
 	 * @param centreY   Circle center on the y axis
 	 * @param radius    Radius of the circle
 	 */
-	protected void addCircleOp(DrawEvent drawEvent, int centreX, int centreY, int radius) {
+	protected void drawCircle(DrawEvent drawEvent, int centreX, int centreY, int radius) {
 		gc.setFill(colorScheme.getColor(drawEvent));
 		gc.fillArc(centreX - radius / 2, centreY - radius / 2, radius, radius, 0, 360, ArcType.ROUND);
 		if (drawEvent == DrawEvent.MOVE_OUTER_CIRCLE)
