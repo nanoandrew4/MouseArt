@@ -22,10 +22,12 @@ public class RGBScale implements ColorScheme {
 			case LINE:
 				return colors.get((int) (System.currentTimeMillis() - start) % colors.size());
 			case LMOUSE_PRESS:
-				return Color.BLACK;
+				return Color.rgb((int) (Math.random() * 255), (int) (Math.random() * 255), (int) (Math.random() * 255));
 			case MOVE_INNER_CIRCLE:
-				return Color.BLACK;
+				return Color.WHITE;
 			case MOVE_OUTER_CIRCLE:
+				return Color.WHITE;
+			case BACKGROUND:
 				return Color.BLACK;
 			default:
 				return Color.BLACK;

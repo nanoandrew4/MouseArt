@@ -11,11 +11,14 @@ public class MouseHook implements NativeMouseInputListener {
 	private MouseArt mArt;
 
 	private Point prevLocation;
-	private long lastMove, diff;
+	private long lastMove;
 	private boolean mousePressed;
 
-	MouseHook(MouseArt mArt) {
+	private int mPressCircleRad;
+
+	MouseHook(MouseArt mArt, int screenWidth, int screenHeight) {
 		this.mArt = mArt;
+		mPressCircleRad = (screenWidth > screenHeight ? screenWidth : screenHeight) / 20;
 	}
 
 	@Override
@@ -27,7 +30,7 @@ public class MouseHook implements NativeMouseInputListener {
 		if (mousePressed)
 			return;
 		mousePressed = true;
-		drawCircle(DrawEvent.LMOUSE_PRESS, prevLocation.x, prevLocation.y, MouseArt.rand.nextInt(70) + 5);
+		drawCircle(DrawEvent.LMOUSE_PRESS, prevLocation.x, prevLocation.y, MouseArt.rand.nextInt(mPressCircleRad) + 5);
 	}
 
 	@Override
@@ -38,6 +41,7 @@ public class MouseHook implements NativeMouseInputListener {
 	@Override
 	public void nativeMouseMoved(NativeMouseEvent nativeMouseEvent) {
 		Point location = nativeMouseEvent.getPoint();
+		long diff;
 
 		/*
 		 * If the mouse has moved, draw a line between previous position and current position.
@@ -62,13 +66,13 @@ public class MouseHook implements NativeMouseInputListener {
 	public void nativeMouseDragged(NativeMouseEvent nativeMouseEvent) {
 	}
 
-	public void prepForRecording() {
+	void prepForRecording() {
 		prevLocation = MouseInfo.getPointerInfo().getLocation();
 		lastMove = System.currentTimeMillis();
 	}
 
 	private void drawLine(int startX, int startY, int endX, int endY) {
-		Platform.runLater(() -> mArt.drawLine(DrawEvent.LINE, startX, startY, endX, endY));
+		Platform.runLater(() -> mArt.drawLine(startX, startY, endX, endY));
 	}
 
 	private void drawCircle(DrawEvent drawEvent, int centreX, int centreY, int radius) {

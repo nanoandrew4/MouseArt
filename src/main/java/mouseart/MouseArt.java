@@ -18,7 +18,6 @@ import javafx.stage.FileChooser;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import mouseart.color_scheme.ColorScheme;
-import mouseart.color_scheme.GrayScale;
 import mouseart.color_scheme.RGBScale;
 import org.jnativehook.GlobalScreen;
 import org.jnativehook.NativeHookException;
@@ -26,7 +25,10 @@ import org.jnativehook.NativeHookException;
 import javax.imageio.ImageIO;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Random;
+import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -35,8 +37,9 @@ import java.util.logging.Logger;
  */
 public class MouseArt extends Application {
 	private MouseHook mouseHook;
+	private KeyHook keyHook;
 
-	public static Random rand = new Random();
+	static Random rand = new Random();
 
 	private int screenWidth, screenHeight;
 	private int sceneWidth, sceneHeight;
@@ -58,6 +61,8 @@ public class MouseArt extends Application {
 //	private ColorScheme colorScheme = new GrayScale();
 	private ColorScheme colorScheme = new RGBScale();
 
+	private String keysFileLoc = System.getProperty("USER_HOME_DIR") + "/.ioart_keys";
+
 	public static void main(String[] args) {
 		launch(args);
 	}
@@ -73,6 +78,9 @@ public class MouseArt extends Application {
 		} catch (NativeHookException e) {
 			e.printStackTrace();
 		}
+
+		if (!Files.exists(Paths.get(keysFileLoc)))
+			setupKeys();
 
 		// Get screen sizes, supports multiple monitors
 		screenWidth = (int) (Screen.getScreens().get(Screen.getScreens().size() - 1).getBounds().getMaxX());
@@ -118,6 +126,20 @@ public class MouseArt extends Application {
 		primaryStage.show(); // Invokes scene width and height property listeners
 	}
 
+	private void setupKeys() {
+		System.out.println(
+				"Before we continue, a file needs to be created so that future runs of this application\n" +
+				"know your key layout. Do you agree to let the program create this file? (y/n)"
+		);
+
+		if (!"y".equalsIgnoreCase(new Scanner(System.in).nextLine()))
+			System.exit(127);
+
+
+
+		System.out.println("The file will be stored under: " + keysFileLoc);
+	}
+
 	private void refreshPreview() {
 		if (stageMinimized || canvas == null) return;
 		geomPreview.setImage(canvas.snapshot(snapshotParameters, null));
@@ -126,14 +148,13 @@ public class MouseArt extends Application {
 	/**
 	 * Draws a line on the canvas.
 	 *
-	 * @param drawEvent Determinant of color through use of color palette, depending on the figure being drawn
 	 * @param startX    Line start coordinate on the x axis
 	 * @param startY    Line start coordinate on the y axis
 	 * @param endX      Line end coordinate on the x axis
 	 * @param endY      Line end coordinate on the y axis
 	 */
-	protected void drawLine(DrawEvent drawEvent, int startX, int startY, int endX, int endY) {
-		gc.setStroke(colorScheme.getColor(drawEvent));
+	protected void drawLine(int startX, int startY, int endX, int endY) {
+		gc.setStroke(colorScheme.getColor(DrawEvent.LINE));
 		gc.setLineWidth(1);
 		gc.strokeLine(startX, startY, endX, endY);
 		refreshPreview();
@@ -199,12 +220,18 @@ public class MouseArt extends Application {
 		previewScene.setRoot(previewGroup = new Group(geomPreview, menuBar));
 		canvas = new Canvas(screenWidth, screenHeight);
 		gc = canvas.getGraphicsContext2D();
+		gc.setStroke(colorScheme.getColor(DrawEvent.BACKGROUND));
+		gc.fillRect(0, 0, screenWidth, screenHeight);
 		geometryScene.setRoot(new Group(canvas));
+		refreshPreview();
 
-		mouseHook = new MouseHook(this);
+		mouseHook = new MouseHook(this, screenWidth, screenHeight);
 		mouseHook.prepForRecording();
+		keyHook = new KeyHook(screenWidth, screenHeight);
+
 		GlobalScreen.addNativeMouseListener(mouseHook);
 		GlobalScreen.addNativeMouseMotionListener(mouseHook);
+		GlobalScreen.addNativeKeyListener(keyHook);
 	}
 
 	private void pauseRecording() {
