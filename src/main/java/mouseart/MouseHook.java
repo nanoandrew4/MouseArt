@@ -1,6 +1,7 @@
 package mouseart;
 
 import javafx.application.Platform;
+import org.jnativehook.GlobalScreen;
 import org.jnativehook.mouse.NativeMouseEvent;
 import org.jnativehook.mouse.NativeMouseInputListener;
 
@@ -19,6 +20,9 @@ public class MouseHook implements NativeMouseInputListener {
 	MouseHook(MouseArt mArt, int screenWidth, int screenHeight) {
 		this.mArt = mArt;
 		mPressCircleRad = (screenWidth > screenHeight ? screenWidth : screenHeight) / 20;
+
+		GlobalScreen.addNativeMouseListener(this);
+		GlobalScreen.addNativeMouseMotionListener(this);
 	}
 
 	@Override

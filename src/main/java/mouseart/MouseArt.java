@@ -61,7 +61,7 @@ public class MouseArt extends Application {
 //	private ColorScheme colorScheme = new GrayScale();
 	private ColorScheme colorScheme = new RGBScale();
 
-	private String keysFileLoc = System.getProperty("USER_HOME_DIR") + "/.ioart_keys";
+	public static String keysFileLoc = System.getProperty("user.home") + "/.ioart_keys";
 
 	public static void main(String[] args) {
 		launch(args);
@@ -132,10 +132,12 @@ public class MouseArt extends Application {
 				"know your key layout. Do you agree to let the program create this file? (y/n)"
 		);
 
-		if (!"y".equalsIgnoreCase(new Scanner(System.in).nextLine()))
+		Scanner in = new Scanner(System.in);
+		if (!"y".equalsIgnoreCase(in.nextLine()))
 			System.exit(127);
+		in.close();
 
-
+		new KeyboardLayout();
 
 		System.out.println("The file will be stored under: " + keysFileLoc);
 	}
@@ -228,10 +230,6 @@ public class MouseArt extends Application {
 		mouseHook = new MouseHook(this, screenWidth, screenHeight);
 		mouseHook.prepForRecording();
 		keyHook = new KeyHook(screenWidth, screenHeight);
-
-		GlobalScreen.addNativeMouseListener(mouseHook);
-		GlobalScreen.addNativeMouseMotionListener(mouseHook);
-		GlobalScreen.addNativeKeyListener(keyHook);
 	}
 
 	private void pauseRecording() {
