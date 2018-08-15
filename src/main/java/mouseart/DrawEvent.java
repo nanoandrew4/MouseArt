@@ -5,5 +5,5 @@ package mouseart;
  * the specific object being drawn.
  */
 public enum DrawEvent {
-	LINE, MOVE_INNER_CIRCLE, MOVE_OUTER_CIRCLE, LMOUSE_PRESS, BACKGROUND
+	LINE, SQUARE, MOVE_INNER_CIRCLE, MOVE_OUTER_CIRCLE, LMOUSE_PRESS, BACKGROUND
 }

@@ -12,7 +12,7 @@ import java.util.HashMap;
 public class KeyboardLayout implements NativeKeyListener, Serializable {
 	private HashMap<Integer, Point> layout;
 	private ArrayList<Integer> rowWidths;
-	private int layoutHeight;
+	private int numOfRows;
 
 	private int currKey, firstKey = -1, secondKey = -1;
 	private int currX = 0, currY = 0;
@@ -21,8 +21,9 @@ public class KeyboardLayout implements NativeKeyListener, Serializable {
 
 	KeyboardLayout() {
 		layout = new HashMap<>();
+		rowWidths = new ArrayList<>();
 
-		// TODO: UPDATE
+		// TODO: MOVE ALL TO UI POPUP
 		System.out.println("Since I have no way of knowing your keyboard layout, I need to ask a favor of you.\n" +
 						   "I need you to start pressing keys from the top left of your keyboard, to the\n" +
 						   "bottom right. You choose where to start and finish, just note that if you\n" +
@@ -47,6 +48,18 @@ public class KeyboardLayout implements NativeKeyListener, Serializable {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public HashMap<Integer, Point> getLayout() {
+		return layout;
+	}
+
+	public ArrayList<Integer> getRowWidths() {
+		return rowWidths;
+	}
+
+	public int getNumOfRows() {
+		return numOfRows;
 	}
 
 	public static KeyboardLayout loadKeyboardLayout(String layoutLoc) {
@@ -85,7 +98,8 @@ public class KeyboardLayout implements NativeKeyListener, Serializable {
 			currY++;
 		} else if (currKey == prevKey && currKey == secondKey) {
 			System.out.println("\nKeyboard layout input finished");
-			layoutHeight = currY;
+			numOfRows = currY + 1;
+			rowWidths.add(currX);
 			GlobalScreen.removeNativeKeyListener(this);
 			ready = true;
 		}

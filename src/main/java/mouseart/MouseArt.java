@@ -18,6 +18,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import mouseart.color_scheme.ColorScheme;
+import mouseart.color_scheme.GrayScale;
 import mouseart.color_scheme.RGBScale;
 import org.jnativehook.GlobalScreen;
 import org.jnativehook.NativeHookException;
@@ -58,8 +59,8 @@ public class MouseArt extends Application {
 
 	private SnapshotParameters snapshotParameters;
 
-//	private ColorScheme colorScheme = new GrayScale();
-	private ColorScheme colorScheme = new RGBScale();
+	private ColorScheme colorScheme = new GrayScale();
+//	private ColorScheme colorScheme = new RGBScale();
 
 	public static String keysFileLoc = System.getProperty("user.home") + "/.ioart_keys";
 
@@ -103,7 +104,7 @@ public class MouseArt extends Application {
 		});
 		menuBar.setOnMouseExited(event -> {
 			if (state == State.RECORDING)
-				menuBar.setOpacity(0.3);
+				menuBar.setOpacity(0.2);
 		});
 
 		Menu fileMenu = new Menu("File");
@@ -178,6 +179,12 @@ public class MouseArt extends Application {
 		refreshPreview();
 	}
 
+	protected void drawSquare(int centreX, int centreY, int width) {
+		gc.setFill(colorScheme.getColor(DrawEvent.SQUARE));
+		gc.strokeRect(centreX, centreY, width, width);
+		refreshPreview();
+	}
+
 	private void setStageListeners(Stage stage) {
 		// Cleanup if window is closed, ensure all threads end
 		stage.setOnCloseRequest(event -> {
@@ -222,14 +229,13 @@ public class MouseArt extends Application {
 		previewScene.setRoot(previewGroup = new Group(geomPreview, menuBar));
 		canvas = new Canvas(screenWidth, screenHeight);
 		gc = canvas.getGraphicsContext2D();
-		gc.setStroke(colorScheme.getColor(DrawEvent.BACKGROUND));
+		gc.setFill(colorScheme.getColor(DrawEvent.BACKGROUND));
 		gc.fillRect(0, 0, screenWidth, screenHeight);
 		geometryScene.setRoot(new Group(canvas));
 		refreshPreview();
 
 		mouseHook = new MouseHook(this, screenWidth, screenHeight);
-		mouseHook.prepForRecording();
-		keyHook = new KeyHook(screenWidth, screenHeight);
+		keyHook = new KeyHook(this, screenWidth, screenHeight);
 	}
 
 	private void pauseRecording() {
@@ -246,6 +252,7 @@ public class MouseArt extends Application {
 		state = State.STOPPED;
 		GlobalScreen.removeNativeMouseMotionListener(mouseHook);
 		GlobalScreen.removeNativeMouseListener(mouseHook);
+		GlobalScreen.removeNativeKeyListener(keyHook);
 		menuBar.setOpacity(1);
 		saveImage(stage);
 	}

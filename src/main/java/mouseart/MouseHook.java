@@ -4,12 +4,13 @@ import javafx.application.Platform;
 import org.jnativehook.GlobalScreen;
 import org.jnativehook.mouse.NativeMouseEvent;
 import org.jnativehook.mouse.NativeMouseInputListener;
+import org.jnativehook.mouse.NativeMouseMotionListener;
 
 import java.awt.Point;
 import java.awt.MouseInfo;
 
 public class MouseHook implements NativeMouseInputListener {
-	private MouseArt mArt;
+	private MouseArt mouseArt;
 
 	private Point prevLocation;
 	private long lastMove;
@@ -17,9 +18,12 @@ public class MouseHook implements NativeMouseInputListener {
 
 	private int mPressCircleRad;
 
-	MouseHook(MouseArt mArt, int screenWidth, int screenHeight) {
-		this.mArt = mArt;
+	MouseHook(MouseArt mouseArt, int screenWidth, int screenHeight) {
+		this.mouseArt = mouseArt;
 		mPressCircleRad = (screenWidth > screenHeight ? screenWidth : screenHeight) / 20;
+
+		prevLocation = MouseInfo.getPointerInfo().getLocation();
+		lastMove = System.currentTimeMillis();
 
 		GlobalScreen.addNativeMouseListener(this);
 		GlobalScreen.addNativeMouseMotionListener(this);
@@ -70,16 +74,11 @@ public class MouseHook implements NativeMouseInputListener {
 	public void nativeMouseDragged(NativeMouseEvent nativeMouseEvent) {
 	}
 
-	void prepForRecording() {
-		prevLocation = MouseInfo.getPointerInfo().getLocation();
-		lastMove = System.currentTimeMillis();
-	}
-
 	private void drawLine(int startX, int startY, int endX, int endY) {
-		Platform.runLater(() -> mArt.drawLine(startX, startY, endX, endY));
+		Platform.runLater(() -> mouseArt.drawLine(startX, startY, endX, endY));
 	}
 
 	private void drawCircle(DrawEvent drawEvent, int centreX, int centreY, int radius) {
-		Platform.runLater(() -> mArt.drawCircle(drawEvent, centreX, centreY, radius));
+		Platform.runLater(() -> mouseArt.drawCircle(drawEvent, centreX, centreY, radius));
 	}
 }
