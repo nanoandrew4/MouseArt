@@ -1,4 +1,4 @@
-package mouseart;
+package iart;
 
 import org.jnativehook.GlobalScreen;
 import org.jnativehook.keyboard.NativeKeyEvent;
@@ -9,7 +9,9 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class KeyboardLayout implements NativeKeyListener, Serializable {
+public class KeyboardLayout extends Thread implements NativeKeyListener, Serializable{
+	private KeyboardLayoutUI layoutUI;
+
 	private HashMap<Integer, Point> layout;
 	private ArrayList<Integer> rowWidths;
 	private int numOfRows;
@@ -19,19 +21,15 @@ public class KeyboardLayout implements NativeKeyListener, Serializable {
 
 	private boolean ready = false;
 
-	KeyboardLayout() {
+	KeyboardLayout(KeyboardLayoutUI layoutUI) {
+		this.layoutUI = layoutUI;
+
 		layout = new HashMap<>();
 		rowWidths = new ArrayList<>();
+	}
 
-		// TODO: MOVE ALL TO UI POPUP
-		System.out.println("Since I have no way of knowing your keyboard layout, I need to ask a favor of you.\n" +
-						   "I need you to start pressing keys from the top left of your keyboard, to the\n" +
-						   "bottom right. You choose where to start and finish, just note that if you\n" +
-						   "press keys such as volume or power keys, the OS will catch them too.");
-		System.out.println("Start pressing keys! When you are done one row, press backspace twice\n" +
-						   "to continue to the next one. When you have finished entering your layout, \n" +
-						   "press enter twice.");
-
+	@Override
+	public void run() {
 		GlobalScreen.addNativeKeyListener(this);
 
 		while (!ready) {
@@ -42,12 +40,14 @@ public class KeyboardLayout implements NativeKeyListener, Serializable {
 		}
 
 		try {
-			FileOutputStream fos = new FileOutputStream(MouseArt.keysFileLoc);
+			FileOutputStream fos = new FileOutputStream(iArt.keysFileLoc);
 			ObjectOutputStream oos = new ObjectOutputStream(fos);
 			oos.writeObject(this);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+
+		layoutUI.closeSetupWindow();
 	}
 
 	public HashMap<Integer, Point> getLayout() {
@@ -83,13 +83,16 @@ public class KeyboardLayout implements NativeKeyListener, Serializable {
 	public void nativeKeyPressed(NativeKeyEvent nativeKeyEvent) {
 		int prevKey = currKey;
 		currKey = nativeKeyEvent.getKeyCode();
-		if (firstKey == -1)
+		if (firstKey == -1) {
 			firstKey = currKey;
-		else if (secondKey == -1)
+			layoutUI.updateFirstKeyText(NativeKeyEvent.getKeyText(firstKey));
+		} else if (secondKey == -1) {
 			secondKey = currKey;
+			layoutUI.updateSecondKeyText(NativeKeyEvent.getKeyText(secondKey));
+		}
 
 		if (currKey != prevKey && !layout.containsKey(currKey)) {
-			System.out.println("Last input: " + NativeKeyEvent.getKeyText(currKey));
+			layoutUI.updateCurrKeyText(NativeKeyEvent.getKeyText(currKey));
 			layout.put(currKey, new Point(currX++, currY));
 		} else if (currKey == prevKey && currKey == firstKey) {
 			System.out.println("New row");

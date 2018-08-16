@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>nanoandrew4</groupId>
-    <artifactId>MouseArt</artifactId>
+    <artifactId>iArt</artifactId>
     <version>v1.1</version>
 
     <build>
@@ -35,7 +35,7 @@
                             </descriptorRefs>
                             <archive>
                                 <manifest>
-                                    <mainClass>mouseart.MouseArt</mainClass>
+                                    <mainClass>iart.iArt</mainClass>
                                 </manifest>
                             </archive>
                         </configuration>

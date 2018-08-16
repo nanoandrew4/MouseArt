@@ -1,7 +1,7 @@
-package mouseart.color_scheme;
+package iart.color_scheme;
 
 import javafx.scene.paint.Color;
-import mouseart.DrawEvent;
+import iart.DrawEvent;
 
 import java.util.ArrayList;
 

@@ -1,5 +1,6 @@
-package mouseart;
+package iart;
 
+import iart.color_scheme.RGBScale;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
@@ -8,18 +9,16 @@ import javafx.scene.Scene;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuBar;
-import javafx.scene.control.MenuItem;
+import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.shape.ArcType;
 import javafx.scene.transform.Transform;
 import javafx.stage.FileChooser;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
-import mouseart.color_scheme.ColorScheme;
-import mouseart.color_scheme.GrayScale;
-import mouseart.color_scheme.RGBScale;
+import iart.color_scheme.ColorScheme;
+import iart.color_scheme.GrayScale;
+import javafx.stage.StageStyle;
 import org.jnativehook.GlobalScreen;
 import org.jnativehook.NativeHookException;
 
@@ -36,7 +35,7 @@ import java.util.logging.Logger;
 /**
  * Entry point for application. Takes care of all the rendering, and anything related to the UI.
  */
-public class MouseArt extends Application {
+public class iArt extends Application {
 	private MouseHook mouseHook;
 	private KeyHook keyHook;
 
@@ -60,9 +59,8 @@ public class MouseArt extends Application {
 	private SnapshotParameters snapshotParameters;
 
 	private ColorScheme colorScheme = new GrayScale();
-//	private ColorScheme colorScheme = new RGBScale();
 
-	public static String keysFileLoc = System.getProperty("user.home") + "/.ioart_keys";
+	public static String keysFileLoc = System.getProperty("user.home") + "/.iart_keys";
 
 	public static void main(String[] args) {
 		launch(args);
@@ -79,9 +77,6 @@ public class MouseArt extends Application {
 		} catch (NativeHookException e) {
 			e.printStackTrace();
 		}
-
-		if (!Files.exists(Paths.get(keysFileLoc)))
-			setupKeys();
 
 		// Get screen sizes, supports multiple monitors
 		screenWidth = (int) (Screen.getScreens().get(Screen.getScreens().size() - 1).getBounds().getMaxX());
@@ -107,6 +102,7 @@ public class MouseArt extends Application {
 				menuBar.setOpacity(0.2);
 		});
 
+		// Setup file menu
 		Menu fileMenu = new Menu("File");
 
 		startRecording = new MenuItem("Start");
@@ -119,28 +115,45 @@ public class MouseArt extends Application {
 		stopRecording.setOnAction(event -> stopRecording(primaryStage));
 
 		fileMenu.getItems().addAll(startRecording, pauseRecording, stopRecording);
-		menuBar.getMenus().addAll(fileMenu);
+
+		// Setup color scheme menu
+		Menu colorSchemeMenu = new Menu("Color Scheme");
+
+		ToggleGroup tGroup = new ToggleGroup();
+		RadioMenuItem grayScheme = new RadioMenuItem("Grayscale");
+		grayScheme.setToggleGroup(tGroup);
+		grayScheme.setOnAction(event -> colorScheme = new GrayScale());
+		grayScheme.setSelected(true);
+
+		RadioMenuItem rainbowScheme = new RadioMenuItem("Rainbow");
+		rainbowScheme.setToggleGroup(tGroup);
+		rainbowScheme.setOnAction(event -> colorScheme = new RGBScale());
+
+		colorSchemeMenu.getItems().addAll(grayScheme, rainbowScheme);
+
+		// Setup menu bar
+		menuBar.getMenus().addAll(fileMenu, colorSchemeMenu);
 		previewGroup.getChildren().addAll(menuBar);
 
 		setStageListeners(primaryStage);
 		primaryStage.setScene(previewScene);
+		primaryStage.setTitle("iArt");
 		primaryStage.show(); // Invokes scene width and height property listeners
+
+		if (!Files.exists(Paths.get(keysFileLoc)))
+			new KeyboardLayoutUI(primaryStage);
 	}
 
-	private void setupKeys() {
-		System.out.println(
-				"Before we continue, a file needs to be created so that future runs of this application\n" +
-				"know your key layout. Do you agree to let the program create this file? (y/n)"
-		);
-
-		Scanner in = new Scanner(System.in);
-		if (!"y".equalsIgnoreCase(in.nextLine()))
-			System.exit(127);
-		in.close();
-
-		new KeyboardLayout();
-
-		System.out.println("The file will be stored under: " + keysFileLoc);
+	private static void setupKeys() {
+//		System.out.println(
+//				"Before we continue, a file needs to be created so that future runs of this application\n" +
+//				"know your key layout. Do you agree to let the program create this file? (y/n)"
+//		);
+//
+//		Scanner in = new Scanner(System.in);
+//		if (!"y".equalsIgnoreCase(in.nextLine()))
+//			System.exit(127);
+//		in.close();
 	}
 
 	private void refreshPreview() {

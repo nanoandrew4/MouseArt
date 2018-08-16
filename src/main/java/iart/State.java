@@ -1,4 +1,4 @@
-package mouseart;
+package iart;
 
 /**
  * Set of states the ImageRecorder can be in. They are used to control the flow of the program.

@@ -1,16 +1,15 @@
-package mouseart;
+package iart;
 
 import javafx.application.Platform;
 import org.jnativehook.GlobalScreen;
 import org.jnativehook.mouse.NativeMouseEvent;
 import org.jnativehook.mouse.NativeMouseInputListener;
-import org.jnativehook.mouse.NativeMouseMotionListener;
 
 import java.awt.Point;
 import java.awt.MouseInfo;
 
 public class MouseHook implements NativeMouseInputListener {
-	private MouseArt mouseArt;
+	private iArt iArt;
 
 	private Point prevLocation;
 	private long lastMove;
@@ -18,9 +17,9 @@ public class MouseHook implements NativeMouseInputListener {
 
 	private int mPressCircleRad;
 
-	MouseHook(MouseArt mouseArt, int screenWidth, int screenHeight) {
-		this.mouseArt = mouseArt;
-		mPressCircleRad = (screenWidth > screenHeight ? screenWidth : screenHeight) / 20;
+	MouseHook(iArt iArt, int screenWidth, int screenHeight) {
+		this.iArt = iArt;
+		mPressCircleRad = (screenWidth > screenHeight ? screenWidth : screenHeight) / 50;
 
 		prevLocation = MouseInfo.getPointerInfo().getLocation();
 		lastMove = System.currentTimeMillis();
@@ -38,7 +37,7 @@ public class MouseHook implements NativeMouseInputListener {
 		if (mousePressed)
 			return;
 		mousePressed = true;
-		drawCircle(DrawEvent.LMOUSE_PRESS, prevLocation.x, prevLocation.y, MouseArt.rand.nextInt(mPressCircleRad) + 5);
+		drawCircle(DrawEvent.LMOUSE_PRESS, prevLocation.x, prevLocation.y, iArt.rand.nextInt(mPressCircleRad) + 5);
 	}
 
 	@Override
@@ -56,7 +55,7 @@ public class MouseHook implements NativeMouseInputListener {
 		 * If the mouse was stopped for longer than three seconds, draw a circle with a radius proportional to the
 		 * cube root of the time elapsed until the mouse was moved again.
 		 */
-		if (MouseArt.state == mouseart.State.RECORDING) {
+		if (iArt.state == iart.State.RECORDING) {
 			if (!prevLocation.equals(location)) {
 				if ((diff = System.currentTimeMillis() - lastMove) > 3000) {
 					int radius = (int) Math.cbrt(diff);
@@ -75,10 +74,10 @@ public class MouseHook implements NativeMouseInputListener {
 	}
 
 	private void drawLine(int startX, int startY, int endX, int endY) {
-		Platform.runLater(() -> mouseArt.drawLine(startX, startY, endX, endY));
+		Platform.runLater(() -> iArt.drawLine(startX, startY, endX, endY));
 	}
 
 	private void drawCircle(DrawEvent drawEvent, int centreX, int centreY, int radius) {
-		Platform.runLater(() -> mouseArt.drawCircle(drawEvent, centreX, centreY, radius));
+		Platform.runLater(() -> iArt.drawCircle(drawEvent, centreX, centreY, radius));
 	}
 }

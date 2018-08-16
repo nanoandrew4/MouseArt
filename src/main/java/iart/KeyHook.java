@@ -1,4 +1,4 @@
-package mouseart;
+package iart;
 
 import javafx.application.Platform;
 import org.jnativehook.GlobalScreen;
@@ -9,7 +9,7 @@ import java.awt.*;
 import java.util.Random;
 
 public class KeyHook implements NativeKeyListener {
-	private MouseArt mouseArt;
+	private iArt iArt;
 
 	private KeyboardLayout layout;
 	private Random rand = new Random();
@@ -18,12 +18,12 @@ public class KeyHook implements NativeKeyListener {
 
 	private int squareMaxWidth = 50; // TODO: MAYBE USE NON-MAGIC NUMBER?
 
-	KeyHook(MouseArt mouseArt, int screenWidth, int screenHeight) {
-		this.mouseArt = mouseArt;
+	KeyHook(iArt iArt, int screenWidth, int screenHeight) {
+		this.iArt = iArt;
 		this.screenWidth = screenWidth;
 		this.screenHeight = screenHeight;
 
-		layout = KeyboardLayout.loadKeyboardLayout(MouseArt.keysFileLoc);
+		layout = KeyboardLayout.loadKeyboardLayout(iArt.keysFileLoc);
 		GlobalScreen.addNativeKeyListener(this);
 	}
 
@@ -38,7 +38,7 @@ public class KeyHook implements NativeKeyListener {
 			int drawPosX = topLeftX + rand.nextInt((screenWidth / keysInRow) - squareMaxWidth);
 			int drawPosY = topLeftY + rand.nextInt((screenHeight / layout.getNumOfRows()) - squareMaxWidth);
 
-			Platform.runLater(() -> mouseArt.drawSquare(drawPosX, drawPosY, rand.nextInt(squareMaxWidth - 10) + 10));
+			Platform.runLater(() -> iArt.drawSquare(drawPosX, drawPosY, rand.nextInt(squareMaxWidth - 10) + 10));
 		}
 	}
 
