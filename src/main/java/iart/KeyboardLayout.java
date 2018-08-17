@@ -1,5 +1,6 @@
 package iart;
 
+import javafx.application.Platform;
 import org.jnativehook.GlobalScreen;
 import org.jnativehook.keyboard.NativeKeyEvent;
 import org.jnativehook.keyboard.NativeKeyListener;
@@ -9,8 +10,12 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class KeyboardLayout extends Thread implements NativeKeyListener, Serializable{
-	private KeyboardLayoutUI layoutUI;
+/**
+ * Controls the backend portion of the keyboard layout setup. Since the layout can not be determined automagically, the
+ * user has to enter it once, so it can be saved a reused.
+ */
+public class KeyboardLayout extends Thread implements NativeKeyListener, Serializable {
+	private transient KeyboardLayoutUI layoutUI;
 
 	private HashMap<Integer, Point> layout;
 	private ArrayList<Integer> rowWidths;
@@ -21,6 +26,11 @@ public class KeyboardLayout extends Thread implements NativeKeyListener, Seriali
 
 	private boolean ready = false;
 
+	/**
+	 * Initializes the class, but to carry out the setup, the thread must be started.
+	 *
+	 * @param layoutUI UI layout instance, so that info can be relayed back to the UI for a better UX
+	 */
 	KeyboardLayout(KeyboardLayoutUI layoutUI) {
 		this.layoutUI = layoutUI;
 
@@ -47,22 +57,45 @@ public class KeyboardLayout extends Thread implements NativeKeyListener, Seriali
 			e.printStackTrace();
 		}
 
-		layoutUI.closeSetupWindow();
+		GlobalScreen.removeNativeKeyListener(this);
+		Platform.runLater(() -> layoutUI.closeSetupWindow());
 	}
 
-	public HashMap<Integer, Point> getLayout() {
+	/**
+	 * Returns the hashmap containing the mappings of keycodes to the positions of the keys with respect to each other.
+	 *
+	 * @return Keyboard layout hashmap
+	 */
+	HashMap<Integer, Point> getLayout() {
 		return layout;
 	}
 
-	public ArrayList<Integer> getRowWidths() {
+	/**
+	 * Returns the ArrayList containing the widths of each of the rows that form the keyboard layout.
+	 *
+	 * @return ArrayList containing the widths of the rows in the layout
+	 */
+	ArrayList<Integer> getRowWidths() {
 		return rowWidths;
 	}
 
-	public int getNumOfRows() {
+	/**
+	 * Returns the number of rows in the layout.
+	 *
+	 * @return Integer representation of the number of rows in the layout
+	 */
+	int getNumOfRows() {
 		return numOfRows;
 	}
 
-	public static KeyboardLayout loadKeyboardLayout(String layoutLoc) {
+	/**
+	 * Loads a KeyboardLayout from a file. This file must have been previously written by this class for proper
+	 * loading.
+	 *
+	 * @param layoutLoc Path to the file containing the serialized KeyboardLayout
+	 * @return KeyboardLayout instance with the previously entered layout
+	 */
+	static KeyboardLayout loadKeyboardLayout(String layoutLoc) {
 		try {
 			FileInputStream fis = new FileInputStream(layoutLoc);
 			ObjectInputStream ois = new ObjectInputStream(fis);
@@ -76,7 +109,6 @@ public class KeyboardLayout extends Thread implements NativeKeyListener, Seriali
 
 	@Override
 	public void nativeKeyTyped(NativeKeyEvent nativeKeyEvent) {
-
 	}
 
 	@Override
@@ -94,22 +126,20 @@ public class KeyboardLayout extends Thread implements NativeKeyListener, Seriali
 		if (currKey != prevKey && !layout.containsKey(currKey)) {
 			layoutUI.updateCurrKeyText(NativeKeyEvent.getKeyText(currKey));
 			layout.put(currKey, new Point(currX++, currY));
+			layoutUI.updateCurrRowColumn(currX, currY);
 		} else if (currKey == prevKey && currKey == firstKey) {
-			System.out.println("New row");
 			rowWidths.add(currX);
 			currX = 0;
 			currY++;
+			layoutUI.updateCurrRowColumn(currX, currY);
 		} else if (currKey == prevKey && currKey == secondKey) {
-			System.out.println("\nKeyboard layout input finished");
 			numOfRows = currY + 1;
 			rowWidths.add(currX);
-			GlobalScreen.removeNativeKeyListener(this);
 			ready = true;
 		}
 	}
 
 	@Override
 	public void nativeKeyReleased(NativeKeyEvent nativeKeyEvent) {
-
 	}
 }

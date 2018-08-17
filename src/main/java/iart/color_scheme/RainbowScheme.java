@@ -5,8 +5,10 @@ import iart.DrawEvent;
 
 import java.util.ArrayList;
 
-public class RGBScale implements ColorScheme {
-
+/**
+ * Rainbow scale color scheme. Used when determining the color with which to draw various objects on screen.
+ */
+public class RainbowScheme implements ColorScheme {
 	private static ArrayList<Color> colors = new ArrayList<>();
 	private static long start = System.currentTimeMillis();
 
@@ -22,9 +24,11 @@ public class RGBScale implements ColorScheme {
 			case LINE:
 				return colors.get((int) (System.currentTimeMillis() - start) % colors.size());
 			case LMOUSE_PRESS:
-				return Color.rgb((int) (Math.random() * 255), (int) (Math.random() * 255), (int) (Math.random() * 255));
+				int r = (int) (Math.random() * 255);
+				int g = (int) (Math.random() * 255);
+				int b = (int) (Math.random() * 255);
+				return Color.rgb(r, g, b, (r + g + b) / (3d * 255d));
 			case MOVE_INNER_CIRCLE:
-				return Color.WHITE;
 			case MOVE_OUTER_CIRCLE:
 				return Color.WHITE;
 			case BACKGROUND:

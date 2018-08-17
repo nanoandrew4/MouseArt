@@ -7,16 +7,19 @@ import javafx.scene.text.Text;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
+/**
+ *
+ */
 public class KeyboardLayoutUI {
 	private Stage stage;
-	private Scene scene;
-	private Pane pane;
 
-	private KeyboardLayout layout;
-
-	private Text firstKey, secondKey, currKey;
+	private Text firstKey, secondKey, currKey, currRowColumn;
 	private final Font font = new Font(14);
 
+	/**
+	 *
+	 * @param primaryStage
+	 */
 	KeyboardLayoutUI(Stage primaryStage) {
 		stage = new Stage();
 		stage.initModality(Modality.APPLICATION_MODAL);
@@ -25,21 +28,21 @@ public class KeyboardLayoutUI {
 			primaryStage.close();
 			System.exit(0);
 		});
-		pane = new Pane();
-		scene = new Scene(pane, 600, 400);
+		Pane pane = new Pane();
+		Scene scene = new Scene(pane, 600, 400);
 
 		stage.setScene(scene);
 		stage.setTitle("Layout setup");
 		stage.show();
 
-		// TODO: INFO NEEDS UPDATING
 		Text info = new Text(0, scene.getY() / 2,
 							 "Since I have no way of knowing your keyboard layout, I need to ask a favor of you. " +
 							 "I need you to start pressing keys from the top left of your keyboard, to the bottom " +
 							 "right. You choose where to start and finish, just note that if you press keys such as " +
-							 "volume or power keys, the OS will catch them too.\n" +
-							 "Start pressing keys! When you are done one row, press backspace twice to continue to " +
-							 "the next one. When you have finished entering your layout, press enter twice."
+							 "volume or power keys, the OS will catch them too. The file holding your layout will " +
+							 "be stored under: " + iArt.keysFileLoc + "\n" +
+							 "Start pressing keys! When you are done one row, press the first key you pressed twice. " +
+							 "When you have finished entering your layout, press the second key you pressed twice."
 		);
 		info.setFont(font);
 
@@ -53,10 +56,14 @@ public class KeyboardLayoutUI {
 		secondKey.setFont(font);
 		currKey = new Text(0, info.getBoundsInLocal().getHeight() + font.getSize() * 3, "Current key: None...");
 		currKey.setFont(font);
+		currRowColumn = new Text(0, info.getBoundsInLocal().getHeight() + font.getSize() * 4, "Current row/column: " +
+																							  "0/0");
+		currRowColumn.setFont(font);
 
-		pane.getChildren().addAll(firstKey, secondKey, currKey);
 
-		layout = new KeyboardLayout(this);
+		pane.getChildren().addAll(firstKey, secondKey, currKey, currRowColumn);
+
+		KeyboardLayout layout = new KeyboardLayout(this);
 		layout.start();
 	}
 
@@ -70,6 +77,10 @@ public class KeyboardLayoutUI {
 
 	void updateCurrKeyText(String key) {
 		currKey.setText("Current key: " + key);
+	}
+
+	void updateCurrRowColumn(int column, int row) {
+		currRowColumn.setText("Current column/row: " + column + "/" + row);
 	}
 
 	void closeSetupWindow() {
