@@ -1,5 +1,7 @@
 package iart;
 
+import iart.color_scheme.ColorScheme;
+import iart.color_scheme.GrayScheme;
 import iart.color_scheme.RainbowScheme;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -16,8 +18,6 @@ import javafx.scene.transform.Transform;
 import javafx.stage.FileChooser;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
-import iart.color_scheme.ColorScheme;
-import iart.color_scheme.GrayScheme;
 import org.jnativehook.GlobalScreen;
 import org.jnativehook.NativeHookException;
 
@@ -269,7 +269,8 @@ public class iArt extends Application {
 
 	/**
 	 * Stops the drawing process, removes mouse and keyboard trackers, and saves the canvas to an image.
-	 * @param stage
+	 *
+	 * @param stage Stage which contains the canvas that was being drawn to, so that it can be saved as an image
 	 */
 	private void stopRecording(Stage stage) {
 		state = State.STOPPED;

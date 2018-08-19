@@ -1,5 +1,6 @@
 package iart;
 
+import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.Font;
@@ -8,7 +9,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 /**
- *
+ * UI portion of the keyboard layout setup process.
  */
 public class KeyboardLayoutUI {
 	private Stage stage;
@@ -17,8 +18,11 @@ public class KeyboardLayoutUI {
 	private final Font font = new Font(14);
 
 	/**
+	 * This method launches a new window which displays information relevant to the keyboard layout setup. If the
+	 * window is closed before the setup has been finished, the whole program will end.
 	 *
-	 * @param primaryStage
+	 * @param primaryStage Application stage, which is launched when the program starts, so that it may be closed if
+	 *                     the setups does not finish successfully
 	 */
 	KeyboardLayoutUI(Stage primaryStage) {
 		stage = new Stage();
@@ -26,7 +30,8 @@ public class KeyboardLayoutUI {
 		stage.setOnCloseRequest((event) -> {
 			stage.close();
 			primaryStage.close();
-			System.exit(0);
+			Platform.exit();
+//			System.exit(0);
 		});
 		Pane pane = new Pane();
 		Scene scene = new Scene(pane, 600, 400);
@@ -41,7 +46,8 @@ public class KeyboardLayoutUI {
 							 "right. You choose where to start and finish, just note that if you press keys such as " +
 							 "volume or power keys, the OS will catch them too. The file holding your layout will " +
 							 "be stored under: " + iArt.keysFileLoc + "\n" +
-							 "Start pressing keys! When you are done one row, press the first key you pressed twice. " +
+							 "Start pressing keys! When you are done one row, press the first key you pressed twice." +
+							 " " +
 							 "When you have finished entering your layout, press the second key you pressed twice."
 		);
 		info.setFont(font);

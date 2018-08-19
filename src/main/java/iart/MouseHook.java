@@ -8,6 +8,10 @@ import org.jnativehook.mouse.NativeMouseInputListener;
 import java.awt.Point;
 import java.awt.MouseInfo;
 
+/**
+ * Listens for mouse events and triggers draw events to create a visual representation of the users mouse movements
+ * and clicks.
+ */
 public class MouseHook implements NativeMouseInputListener {
 	private iArt iArt;
 
@@ -17,6 +21,14 @@ public class MouseHook implements NativeMouseInputListener {
 
 	private int mPressCircleRad;
 
+	/**
+	 * Sets up the mouse listener and registers it as a global listener. Once this constructor returns, the mouse
+	 * listener is fully operational, and will start processing mouse movement/click events immediately.
+	 *
+	 * @param iArt         iArt instance that owns this KeyHook instance
+	 * @param screenWidth  Width of the screen(s) in pixels
+	 * @param screenHeight Height of the screen(s) in pixels
+	 */
 	MouseHook(iArt iArt, int screenWidth, int screenHeight) {
 		this.iArt = iArt;
 		mPressCircleRad = (screenWidth > screenHeight ? screenWidth : screenHeight) / 50;
