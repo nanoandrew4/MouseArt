@@ -1,5 +1,6 @@
-package iart;
+package iart.listeners.keyboard;
 
+import iart.iArt;
 import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
@@ -24,14 +25,14 @@ public class KeyboardLayoutUI {
 	 * @param primaryStage Application stage, which is launched when the program starts, so that it may be closed if
 	 *                     the setups does not finish successfully
 	 */
-	KeyboardLayoutUI(Stage primaryStage) {
+	public KeyboardLayoutUI(Stage primaryStage) {
 		stage = new Stage();
 		stage.initModality(Modality.APPLICATION_MODAL);
 		stage.setOnCloseRequest((event) -> {
 			stage.close();
 			primaryStage.close();
 			Platform.exit();
-//			System.exit(0);
+			System.exit(0);
 		});
 		Pane pane = new Pane();
 		Scene scene = new Scene(pane, 600, 400);

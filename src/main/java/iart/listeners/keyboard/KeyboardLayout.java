@@ -1,5 +1,6 @@
-package iart;
+package iart.listeners.keyboard;
 
+import iart.iArt;
 import javafx.application.Platform;
 import org.jnativehook.GlobalScreen;
 import org.jnativehook.keyboard.NativeKeyEvent;
@@ -32,6 +33,7 @@ public class KeyboardLayout extends Thread implements NativeKeyListener, Seriali
 	 * @param layoutUI UI layout instance, so that info can be relayed back to the UI for a better UX
 	 */
 	KeyboardLayout(KeyboardLayoutUI layoutUI) {
+		this.setDaemon(true);
 		this.layoutUI = layoutUI;
 
 		layout = new HashMap<>();
@@ -53,8 +55,9 @@ public class KeyboardLayout extends Thread implements NativeKeyListener, Seriali
 			FileOutputStream fos = new FileOutputStream(iArt.keysFileLoc);
 			ObjectOutputStream oos = new ObjectOutputStream(fos);
 			oos.writeObject(this);
+			fos.close();
 		} catch (IOException e) {
-			e.printStackTrace();
+			System.err.println("Error writing the keyboard layout to a file...");
 		}
 
 		GlobalScreen.removeNativeKeyListener(this);

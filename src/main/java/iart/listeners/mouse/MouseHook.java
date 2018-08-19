@@ -1,20 +1,23 @@
-package iart;
+package iart.listeners.mouse;
 
+import iart.DrawEvent;
+import iart.iArt;
 import javafx.application.Platform;
 import org.jnativehook.GlobalScreen;
 import org.jnativehook.mouse.NativeMouseEvent;
 import org.jnativehook.mouse.NativeMouseInputListener;
 
-import java.awt.Point;
-import java.awt.MouseInfo;
+import java.awt.*;
+import java.util.Random;
 
 /**
  * Listens for mouse events and triggers draw events to create a visual representation of the users mouse movements
  * and clicks.
  */
 public class MouseHook implements NativeMouseInputListener {
-	private iArt iArt;
+	private iart.iArt iArt;
 
+	private Random rand = new Random();
 	private Point prevLocation;
 	private long lastMove;
 	private boolean mousePressed;
@@ -29,7 +32,7 @@ public class MouseHook implements NativeMouseInputListener {
 	 * @param screenWidth  Width of the screen(s) in pixels
 	 * @param screenHeight Height of the screen(s) in pixels
 	 */
-	MouseHook(iArt iArt, int screenWidth, int screenHeight) {
+	public MouseHook(iArt iArt, int screenWidth, int screenHeight) {
 		this.iArt = iArt;
 		mPressCircleRad = (screenWidth > screenHeight ? screenWidth : screenHeight) / 50;
 
@@ -49,7 +52,7 @@ public class MouseHook implements NativeMouseInputListener {
 		if (mousePressed)
 			return;
 		mousePressed = true;
-		drawCircle(DrawEvent.LMOUSE_PRESS, prevLocation.x, prevLocation.y, iArt.rand.nextInt(mPressCircleRad) + 5);
+		drawCircle(DrawEvent.LMOUSE_PRESS, prevLocation.x, prevLocation.y, rand.nextInt(mPressCircleRad) + 5);
 	}
 
 	@Override

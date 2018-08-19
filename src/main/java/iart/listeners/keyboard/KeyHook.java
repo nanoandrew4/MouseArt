@@ -1,5 +1,7 @@
-package iart;
+package iart.listeners.keyboard;
 
+import iart.State;
+import iart.iArt;
 import javafx.application.Platform;
 import org.jnativehook.GlobalScreen;
 import org.jnativehook.keyboard.NativeKeyEvent;
@@ -12,7 +14,7 @@ import java.util.Random;
  * Listens for keyboard events and triggers draw events to create a visual representation of the users keyboard use.
  */
 public class KeyHook implements NativeKeyListener {
-	private iArt iArt;
+	private iart.iArt iArt;
 
 	private KeyboardLayout layout;
 	private Random rand = new Random();
@@ -29,7 +31,7 @@ public class KeyHook implements NativeKeyListener {
 	 * @param screenWidth  Width of the screen(s) in pixels
 	 * @param screenHeight Height of the screen(s) in pixels
 	 */
-	KeyHook(iArt iArt, int screenWidth, int screenHeight) {
+	public KeyHook(iArt iArt, int screenWidth, int screenHeight) {
 		this.iArt = iArt;
 		this.screenWidth = screenWidth;
 		this.screenHeight = screenHeight;
@@ -42,16 +44,18 @@ public class KeyHook implements NativeKeyListener {
 
 	@Override
 	public void nativeKeyPressed(NativeKeyEvent nativeKeyEvent) {
-		Point keyPos = layout.getLayout().get(nativeKeyEvent.getKeyCode());
+		if (iArt.state == State.RECORDING) {
+			Point keyPos = layout.getLayout().get(nativeKeyEvent.getKeyCode());
 
-		if (keyPos != null) {
-			int keysInRow = layout.getRowWidths().get(keyPos.y);
-			int topLeftX = (screenWidth / keysInRow) * keyPos.x;
-			int topLeftY = (screenHeight / layout.getNumOfRows()) * keyPos.y;
-			int drawPosX = topLeftX + rand.nextInt((screenWidth / keysInRow) - squareMaxWidth);
-			int drawPosY = topLeftY + rand.nextInt((screenHeight / layout.getNumOfRows()) - squareMaxWidth);
+			if (keyPos != null) {
+				int keysInRow = layout.getRowWidths().get(keyPos.y);
+				int topLeftX = (screenWidth / keysInRow) * keyPos.x;
+				int topLeftY = (screenHeight / layout.getNumOfRows()) * keyPos.y;
+				int drawPosX = topLeftX + rand.nextInt((screenWidth / keysInRow) - squareMaxWidth);
+				int drawPosY = topLeftY + rand.nextInt((screenHeight / layout.getNumOfRows()) - squareMaxWidth);
 
-			Platform.runLater(() -> iArt.drawSquare(drawPosX, drawPosY, rand.nextInt(squareMaxWidth - 10) + 10));
+				Platform.runLater(() -> iArt.drawSquare(drawPosX, drawPosY, rand.nextInt(squareMaxWidth - 10) + 10));
+			}
 		}
 	}
 

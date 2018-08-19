@@ -3,6 +3,9 @@ package iart;
 import iart.color_scheme.ColorScheme;
 import iart.color_scheme.GrayScheme;
 import iart.color_scheme.RainbowScheme;
+import iart.listeners.keyboard.KeyHook;
+import iart.listeners.keyboard.KeyboardLayoutUI;
+import iart.listeners.mouse.MouseHook;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
@@ -26,7 +29,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -39,13 +41,11 @@ public class iArt extends Application {
 	private MouseHook mouseHook;
 	private KeyHook keyHook;
 
-	static Random rand = new Random();
-
 	private int screenWidth, screenHeight;
 	private int sceneWidth, sceneHeight;
 	private boolean stageMinimized = false;
 
-	static State state = State.STOPPED;
+	public static State state = State.STOPPED;
 
 	private Scene geometryScene, previewScene;
 	private Group previewGroup;
@@ -138,7 +138,7 @@ public class iArt extends Application {
 		setStageListeners(primaryStage);
 		primaryStage.setScene(previewScene);
 		primaryStage.setTitle("iArt");
-		primaryStage.show(); // Invokes scene width and height property listeners
+		primaryStage.show();
 
 		if (!Files.exists(Paths.get(keysFileLoc)))
 			new KeyboardLayoutUI(primaryStage);
@@ -157,7 +157,7 @@ public class iArt extends Application {
 	 * @param endX   Line end coordinate on the x axis
 	 * @param endY   Line end coordinate on the y axis
 	 */
-	protected void drawLine(int startX, int startY, int endX, int endY) {
+	public void drawLine(int startX, int startY, int endX, int endY) {
 		gc.setStroke(colorScheme.getColor(DrawEvent.LINE));
 		gc.setLineWidth(1);
 		gc.strokeLine(startX, startY, endX, endY);
@@ -172,7 +172,7 @@ public class iArt extends Application {
 	 * @param centreY   Circle center on the y axis
 	 * @param radius    Radius of the circle
 	 */
-	protected void drawCircle(DrawEvent drawEvent, int centreX, int centreY, int radius) {
+	public void drawCircle(DrawEvent drawEvent, int centreX, int centreY, int radius) {
 		gc.setFill(colorScheme.getColor(drawEvent));
 		gc.fillArc(centreX - radius / 2, centreY - radius / 2, radius, radius, 0, 360, ArcType.ROUND);
 		if (drawEvent == DrawEvent.MOVE_OUTER_CIRCLE)
@@ -187,7 +187,7 @@ public class iArt extends Application {
 	 * @param topLeftY Top left y coordinate on which to place the square
 	 * @param width    Width of the square (of one of the sides)
 	 */
-	protected void drawSquare(int topLeftX, int topLeftY, int width) {
+	public void drawSquare(int topLeftX, int topLeftY, int width) {
 		gc.setFill(colorScheme.getColor(DrawEvent.SQUARE));
 		gc.strokeRect(topLeftX, topLeftY, width, width);
 		refreshPreview();
@@ -274,9 +274,11 @@ public class iArt extends Application {
 	 */
 	private void stopRecording(Stage stage) {
 		state = State.STOPPED;
+
 		GlobalScreen.removeNativeMouseMotionListener(mouseHook);
 		GlobalScreen.removeNativeMouseListener(mouseHook);
 		GlobalScreen.removeNativeKeyListener(keyHook);
+
 		menuBar.setOpacity(1);
 		saveImage(stage);
 	}
@@ -302,7 +304,7 @@ public class iArt extends Application {
 				ImageIO.write(SwingFXUtils.fromFXImage(canvas.snapshot(new SnapshotParameters(), null), null), "png",
 							  file);
 			} catch (IOException e) {
-				e.printStackTrace();
+				System.err.println("Error writing image to disk...");
 			}
 		}
 	}
