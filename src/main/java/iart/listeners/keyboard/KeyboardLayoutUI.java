@@ -1,6 +1,6 @@
 package iart.listeners.keyboard;
 
-import iart.iArt;
+import iart.Main;
 import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
@@ -46,7 +46,7 @@ public class KeyboardLayoutUI {
 							 "I need you to start pressing keys from the top left of your keyboard, to the bottom " +
 							 "right. You choose where to start and finish, just note that if you press keys such as " +
 							 "volume or power keys, the OS will catch them too. The file holding your layout will " +
-							 "be stored under: " + iArt.keysFileLoc + "\n" +
+							 "be stored under: " + Main.keysFileLoc + "\n" +
 							 "Start pressing keys! When you are done one row, press the first key you pressed twice." +
 							 " " +
 							 "When you have finished entering your layout, press the second key you pressed twice."

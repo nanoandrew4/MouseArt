@@ -6,6 +6,7 @@ import iart.color_scheme.RainbowScheme;
 import iart.listeners.keyboard.KeyHook;
 import iart.listeners.keyboard.KeyboardLayoutUI;
 import iart.listeners.mouse.MouseHook;
+import iart.listeners.mouse.MouseWheelHook;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
@@ -29,19 +30,21 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  * Entry point for application. Initializes the UI portion of the program, and controls all the drawing of shapes and
  * lines on the canvas. Also initializes the keyboard and mouse hooks, and if required, initializes the keyboard
- * layout setup process.
+ * layout setup process. TODO: REWRITE
  */
-public class iArt extends Application {
+public class Main extends Application {
 	private MouseHook mouseHook;
 	private KeyHook keyHook;
+	private MouseWheelHook mWheelHook;
 
-	private int screenWidth, screenHeight;
+	public static int screenWidth, screenHeight;
 	private int sceneWidth, sceneHeight;
 	private boolean stageMinimized = false;
 
@@ -50,7 +53,6 @@ public class iArt extends Application {
 	private Scene geometryScene, previewScene;
 	private Group previewGroup;
 	private Canvas canvas;
-	private GraphicsContext gc;
 
 	private MenuBar menuBar;
 	private MenuItem startRecording, pauseRecording, stopRecording;
@@ -58,7 +60,8 @@ public class iArt extends Application {
 
 	private SnapshotParameters snapshotParameters;
 
-	private ColorScheme colorScheme = new GrayScheme();
+	private final String[] colorSchemesStr = {"GrayScheme", "HSVScheme", "RainbowScheme"};
+	static ColorScheme colorScheme = new GrayScheme();
 
 	public static String keysFileLoc = System.getProperty("user.home") + "/.iart_keys";
 
@@ -118,18 +121,25 @@ public class iArt extends Application {
 
 		// Setup color scheme menu
 		Menu colorSchemeMenu = new Menu("Color Scheme");
-
 		ToggleGroup tGroup = new ToggleGroup();
-		RadioMenuItem grayScheme = new RadioMenuItem("Grayscale");
-		grayScheme.setToggleGroup(tGroup);
-		grayScheme.setOnAction(event -> colorScheme = new GrayScheme());
-		grayScheme.setSelected(true);
 
-		RadioMenuItem rainbowScheme = new RadioMenuItem("Rainbow");
-		rainbowScheme.setToggleGroup(tGroup);
-		rainbowScheme.setOnAction(event -> colorScheme = new RainbowScheme());
+		for (String s : colorSchemesStr) {
+			try {
+				Class.forName("iart.color_scheme." + s);
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			}
+		}
 
-		colorSchemeMenu.getItems().addAll(grayScheme, rainbowScheme);
+		Set<String> colorSchemes = ColorScheme.colorSchemes.keySet();
+		for (String colorSchemeStr : colorSchemes) {
+			RadioMenuItem scheme = new RadioMenuItem(colorSchemeStr);
+			scheme.setToggleGroup(tGroup);
+			scheme.setOnAction(event -> colorScheme = ColorScheme.colorSchemes.get(colorSchemeStr));
+			if (colorScheme.getClass() == ColorScheme.colorSchemes.get(colorSchemeStr).getClass())
+				scheme.setSelected(true);
+			colorSchemeMenu.getItems().add(scheme);
+		}
 
 		// Setup menu bar
 		menuBar.getMenus().addAll(fileMenu, colorSchemeMenu);
@@ -144,53 +154,10 @@ public class iArt extends Application {
 			new KeyboardLayoutUI(primaryStage);
 	}
 
-	private void refreshPreview() {
-		if (stageMinimized || canvas == null) return;
+	void refreshPreview() {
+		if (stageMinimized || canvas == null)
+			return;
 		geomPreview.setImage(canvas.snapshot(snapshotParameters, null));
-	}
-
-	/**
-	 * Draws a line on the canvas.
-	 *
-	 * @param startX Line start coordinate on the x axis
-	 * @param startY Line start coordinate on the y axis
-	 * @param endX   Line end coordinate on the x axis
-	 * @param endY   Line end coordinate on the y axis
-	 */
-	public void drawLine(int startX, int startY, int endX, int endY) {
-		gc.setStroke(colorScheme.getColor(DrawEvent.LINE));
-		gc.setLineWidth(1);
-		gc.strokeLine(startX, startY, endX, endY);
-		refreshPreview();
-	}
-
-	/**
-	 * Draws a circle on the canvas.
-	 *
-	 * @param drawEvent Determinant of color through use of color palette, depending on the figure being drawn
-	 * @param centreX   Circle center on the x axis
-	 * @param centreY   Circle center on the y axis
-	 * @param radius    Radius of the circle
-	 */
-	public void drawCircle(DrawEvent drawEvent, int centreX, int centreY, int radius) {
-		gc.setFill(colorScheme.getColor(drawEvent));
-		gc.fillArc(centreX - radius / 2, centreY - radius / 2, radius, radius, 0, 360, ArcType.ROUND);
-		if (drawEvent == DrawEvent.MOVE_OUTER_CIRCLE)
-			gc.strokeArc(centreX - radius / 2, centreY - radius / 2, radius, radius, 0, 360, ArcType.OPEN);
-		refreshPreview();
-	}
-
-	/**
-	 * Draws a square on the canvas.
-	 *
-	 * @param topLeftX Top left x coordinate on which to place the square
-	 * @param topLeftY Top left y coordinate on which to place the square
-	 * @param width    Width of the square (of one of the sides)
-	 */
-	public void drawSquare(int topLeftX, int topLeftY, int width) {
-		gc.setFill(colorScheme.getColor(DrawEvent.SQUARE));
-		gc.strokeRect(topLeftX, topLeftY, width, width);
-		refreshPreview();
 	}
 
 	/**
@@ -239,19 +206,22 @@ public class iArt extends Application {
 		if (state != State.STOPPED)
 			return;
 		state = State.RECORDING;
-
 		menuBar.setOpacity(0.5);
 
 		previewScene.setRoot(previewGroup = new Group(geomPreview, menuBar));
 		canvas = new Canvas(screenWidth, screenHeight);
-		gc = canvas.getGraphicsContext2D();
-		gc.setFill(colorScheme.getColor(DrawEvent.BACKGROUND));
+
+		GraphicsContext gc = canvas.getGraphicsContext2D();
+		gc.setFill(colorScheme.getColor(DrawEvent.BACKGROUND, null));
 		gc.fillRect(0, 0, screenWidth, screenHeight);
 		geometryScene.setRoot(new Group(canvas));
 		refreshPreview();
 
-		mouseHook = new MouseHook(this, screenWidth, screenHeight);
-		keyHook = new KeyHook(this, screenWidth, screenHeight);
+		Drawer drawer = new Drawer(this, gc);
+
+		mouseHook = new MouseHook(drawer, screenWidth, screenHeight);
+		keyHook = new KeyHook(drawer, screenWidth, screenHeight);
+		mWheelHook = new MouseWheelHook();
 	}
 
 	/**
@@ -278,6 +248,7 @@ public class iArt extends Application {
 		GlobalScreen.removeNativeMouseMotionListener(mouseHook);
 		GlobalScreen.removeNativeMouseListener(mouseHook);
 		GlobalScreen.removeNativeKeyListener(keyHook);
+		GlobalScreen.removeNativeMouseWheelListener(mWheelHook);
 
 		menuBar.setOpacity(1);
 		saveImage(stage);

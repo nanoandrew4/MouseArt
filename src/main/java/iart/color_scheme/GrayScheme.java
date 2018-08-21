@@ -3,11 +3,17 @@ package iart.color_scheme;
 import javafx.scene.paint.Color;
 import iart.DrawEvent;
 
+import java.awt.*;
+
 /**
  * Gray scale color scheme. Used when determining the color with which to draw various objects on screen.
  */
 public class GrayScheme implements ColorScheme {
-	public Color getColor(DrawEvent drawEvent) {
+	static {
+		colorSchemes.put("Grayscale", new GrayScheme());
+	}
+
+	public Color getColor(DrawEvent drawEvent, Point eventLoc) {
 		switch (drawEvent) {
 			case LINE:
 				return Color.BLACK;

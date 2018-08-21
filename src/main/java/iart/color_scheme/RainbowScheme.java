@@ -3,6 +3,7 @@ package iart.color_scheme;
 import javafx.scene.paint.Color;
 import iart.DrawEvent;
 
+import java.awt.*;
 import java.util.ArrayList;
 
 /**
@@ -12,14 +13,19 @@ public class RainbowScheme implements ColorScheme {
 	private static ArrayList<Color> colors = new ArrayList<>();
 	private static long start = System.currentTimeMillis();
 
+	/*
+	 * Load all RGB colors from red to blue, for fast use in getColor().
+	 */
 	static {
+		colorSchemes.put("Rainbow Scheme", new RainbowScheme());
+
 		for (int g = 0; g < 256; g++) colors.add(Color.rgb(255, g, 0));
 		for (int b = 0; b < 256; b++) colors.add(Color.rgb(0, 255, b));
 		for (int r = 0; r < 256; r++) colors.add(Color.rgb(r, 0, 255));
 	}
 
 	@Override
-	public Color getColor(DrawEvent geom) {
+	public Color getColor(DrawEvent geom, Point eventLoc) {
 		switch (geom) {
 			case LINE:
 				return colors.get((int) (System.currentTimeMillis() - start) % colors.size());

@@ -6,7 +6,7 @@
 
     <groupId>nanoandrew4</groupId>
     <artifactId>iArt</artifactId>
-    <version>v1.1</version>
+    <version>v1.2</version>
 
     <build>
         <plugins>
@@ -35,7 +35,7 @@
                             </descriptorRefs>
                             <archive>
                                 <manifest>
-                                    <mainClass>iart.iArt</mainClass>
+                                    <mainClass>iart.Main</mainClass>
                                 </manifest>
                             </archive>
                         </configuration>

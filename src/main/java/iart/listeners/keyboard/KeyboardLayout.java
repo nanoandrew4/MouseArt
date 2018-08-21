@@ -1,6 +1,6 @@
 package iart.listeners.keyboard;
 
-import iart.iArt;
+import iart.Main;
 import javafx.application.Platform;
 import org.jnativehook.GlobalScreen;
 import org.jnativehook.keyboard.NativeKeyEvent;
@@ -52,7 +52,7 @@ public class KeyboardLayout extends Thread implements NativeKeyListener, Seriali
 		}
 
 		try {
-			FileOutputStream fos = new FileOutputStream(iArt.keysFileLoc);
+			FileOutputStream fos = new FileOutputStream(Main.keysFileLoc);
 			ObjectOutputStream oos = new ObjectOutputStream(fos);
 			oos.writeObject(this);
 			fos.close();
