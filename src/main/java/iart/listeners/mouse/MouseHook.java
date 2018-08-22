@@ -1,7 +1,7 @@
 package iart.listeners.mouse;
 
-import iart.DrawEvent;
-import iart.Drawer;
+import iart.draw.DrawEvent;
+import iart.draw.Drawer;
 import iart.Main;
 import javafx.application.Platform;
 import org.jnativehook.GlobalScreen;

@@ -2,11 +2,11 @@ package iart;
 
 import iart.color_scheme.ColorScheme;
 import iart.color_scheme.GrayScheme;
-import iart.color_scheme.RainbowScheme;
+import iart.draw.DrawEvent;
+import iart.draw.Drawer;
 import iart.listeners.keyboard.KeyHook;
 import iart.listeners.keyboard.KeyboardLayoutUI;
 import iart.listeners.mouse.MouseHook;
-import iart.listeners.mouse.MouseWheelHook;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
@@ -17,7 +17,6 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
-import javafx.scene.shape.ArcType;
 import javafx.scene.transform.Transform;
 import javafx.stage.FileChooser;
 import javafx.stage.Screen;
@@ -42,7 +41,6 @@ import java.util.logging.Logger;
 public class Main extends Application {
 	private MouseHook mouseHook;
 	private KeyHook keyHook;
-	private MouseWheelHook mWheelHook;
 
 	public static int screenWidth, screenHeight;
 	private int sceneWidth, sceneHeight;
@@ -60,8 +58,8 @@ public class Main extends Application {
 
 	private SnapshotParameters snapshotParameters;
 
-	private final String[] colorSchemesStr = {"GrayScheme", "HSVScheme", "RainbowScheme"};
-	static ColorScheme colorScheme = new GrayScheme();
+	private final String[] colorSchemesStr = {"GrayScheme", "ColorWheelScheme", "RainbowScheme"};
+	public static ColorScheme colorScheme = new GrayScheme();
 
 	public static String keysFileLoc = System.getProperty("user.home") + "/.iart_keys";
 
@@ -105,7 +103,25 @@ public class Main extends Application {
 				menuBar.setOpacity(0.2);
 		});
 
-		// Setup file menu
+		setupMenuBar(primaryStage);
+		previewGroup.getChildren().addAll(menuBar);
+
+		setStageListeners(primaryStage);
+		primaryStage.setScene(previewScene);
+		primaryStage.setTitle("iArt");
+		primaryStage.show();
+
+		if (!Files.exists(Paths.get(keysFileLoc)))
+			new KeyboardLayoutUI(primaryStage);
+	}
+
+	/**
+	 * Sets up the menu bar and the menus it includes, which allow the user to start/pause/stop recording and change
+	 * color schemes.
+	 *
+	 * @param primaryStage Main stage, so that if the recording is stopped, a snapshot can be taken and stored
+	 */
+	private void setupMenuBar(Stage primaryStage) {
 		Menu fileMenu = new Menu("File");
 
 		startRecording = new MenuItem("Start");
@@ -123,13 +139,7 @@ public class Main extends Application {
 		Menu colorSchemeMenu = new Menu("Color Scheme");
 		ToggleGroup tGroup = new ToggleGroup();
 
-		for (String s : colorSchemesStr) {
-			try {
-				Class.forName("iart.color_scheme." + s);
-			} catch (ClassNotFoundException e) {
-				e.printStackTrace();
-			}
-		}
+		loadColorSchemes();
 
 		Set<String> colorSchemes = ColorScheme.colorSchemes.keySet();
 		for (String colorSchemeStr : colorSchemes) {
@@ -143,18 +153,28 @@ public class Main extends Application {
 
 		// Setup menu bar
 		menuBar.getMenus().addAll(fileMenu, colorSchemeMenu);
-		previewGroup.getChildren().addAll(menuBar);
-
-		setStageListeners(primaryStage);
-		primaryStage.setScene(previewScene);
-		primaryStage.setTitle("iArt");
-		primaryStage.show();
-
-		if (!Files.exists(Paths.get(keysFileLoc)))
-			new KeyboardLayoutUI(primaryStage);
 	}
 
-	void refreshPreview() {
+	/**
+	 * Loads the color schemes specified in the colorSchemesStr array. The strings must match actual class names,
+	 * otherwise the color scheme will not be loaded.
+	 */
+	private void loadColorSchemes() {
+		for (String s : colorSchemesStr) {
+			try {
+				ColorScheme.colorSchemes.put(s, (ColorScheme) Class.forName("iart.color_scheme." + s).getConstructor()
+																   .newInstance());
+			} catch (Exception e) {
+				System.err.println("Color scheme: \"" + s + "\" could not be found.");
+			}
+		}
+	}
+
+	/**
+	 * Refreshes the preview window in the main stage. Called when the window is active and a shape is drawn through
+	 * the Drawer class.
+	 */
+	public void refreshPreview() {
 		if (stageMinimized || canvas == null)
 			return;
 		geomPreview.setImage(canvas.snapshot(snapshotParameters, null));
@@ -221,7 +241,6 @@ public class Main extends Application {
 
 		mouseHook = new MouseHook(drawer, screenWidth, screenHeight);
 		keyHook = new KeyHook(drawer, screenWidth, screenHeight);
-		mWheelHook = new MouseWheelHook();
 	}
 
 	/**
@@ -248,7 +267,6 @@ public class Main extends Application {
 		GlobalScreen.removeNativeMouseMotionListener(mouseHook);
 		GlobalScreen.removeNativeMouseListener(mouseHook);
 		GlobalScreen.removeNativeKeyListener(keyHook);
-		GlobalScreen.removeNativeMouseWheelListener(mWheelHook);
 
 		menuBar.setOpacity(1);
 		saveImage(stage);

@@ -1,4 +1,4 @@
-package iart;
+package iart.draw;
 
 /**
  * Objects drawn in Main. Each one, when passed to the ColorScheme class, will return the appropriate color for

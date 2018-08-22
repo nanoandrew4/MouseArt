@@ -1,5 +1,6 @@
-package iart;
+package iart.draw;
 
+import iart.Main;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.shape.ArcType;
 
@@ -11,7 +12,7 @@ public class Drawer {
 
 	private Main main;
 
-	Drawer(Main main, GraphicsContext gc) {
+	public Drawer(Main main, GraphicsContext gc) {
 		this.main = main;
 		this.gc = gc;
 

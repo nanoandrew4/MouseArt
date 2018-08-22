@@ -1,6 +1,6 @@
 package iart.listeners.keyboard;
 
-import iart.Drawer;
+import iart.draw.Drawer;
 import iart.Main;
 import iart.State;
 import javafx.application.Platform;
