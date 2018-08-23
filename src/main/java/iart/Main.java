@@ -44,11 +44,11 @@ public class Main extends Application {
 
 	public static int screenWidth, screenHeight;
 	private int sceneWidth, sceneHeight;
-	private boolean stageMinimized = false;
+	private boolean windowFocused = false;
 
 	public static State state = State.STOPPED;
 
-	private Scene geometryScene, previewScene;
+	private Scene previewScene;
 	private Group previewGroup;
 	private Canvas canvas;
 
@@ -173,7 +173,7 @@ public class Main extends Application {
 	 * the Drawer class.
 	 */
 	public void refreshPreview() {
-		if (stageMinimized || canvas == null)
+		if (!windowFocused || canvas == null)
 			return;
 		geomPreview.setImage(canvas.snapshot(snapshotParameters, null));
 	}
@@ -196,8 +196,8 @@ public class Main extends Application {
 			System.exit(0);
 		});
 
-		// Track if program is minimized, no need to update UI unnecessarily
-		stage.iconifiedProperty().addListener((ov, t, t1) -> stageMinimized = t1);
+		// Track if window loses focus, no need to waste processing power updating the preview if not focused
+		stage.focusedProperty().addListener((observable, oldValue, newValue) -> windowFocused = newValue);
 
 		// Track if UI is resized, and update previewScene size appropriately
 		previewScene.widthProperty().addListener((obs, oldVal, newVal) -> {
@@ -213,6 +213,9 @@ public class Main extends Application {
 		});
 	}
 
+	/**
+	 *
+	 */
 	private void updateSnapshotParams() {
 		snapshotParameters.setTransform(
 				Transform.scale(sceneWidth / (double) screenWidth, sceneHeight / (double) screenHeight)
@@ -234,7 +237,7 @@ public class Main extends Application {
 							 resMultiplier);
 		screenHeight = (int) (Screen.getScreens().get(Screen.getScreens().size() - 1).getBounds().getMaxY() *
 							  resMultiplier);
-		geometryScene = new Scene(new Group(), screenWidth, screenHeight);
+		Scene geometryScene = new Scene(new Group(), screenWidth, screenHeight);
 
 		updateSnapshotParams();
 

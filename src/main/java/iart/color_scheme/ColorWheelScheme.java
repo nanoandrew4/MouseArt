@@ -30,14 +30,16 @@ public class ColorWheelScheme implements ColorScheme {
 
 				double distFromCentre = Math.sqrt((eventLoc.y - centrePoint.y) * (eventLoc.y - centrePoint.y) +
 												  (eventLoc.x - centrePoint.x) * (eventLoc.x - centrePoint.x));
-				double distToBorder = distToBorder(eventLoc.x - centrePoint.x, centrePoint.y - eventLoc.y);
+				double distToBorder = distToBorder(eventLoc.x, eventLoc.y);
 				double distToBorderRatio = Math.min(Math.max(distFromCentre / distToBorder, 0d), 1d);
 
 				if (!grayscale)
-					return Color.hsb((angleDeg + (drawEvent == DrawEvent.LINE ? 0 : 90) % 360),
-									 1 - 1 / (3 * distToBorderRatio + 1d), 1, 1 - 1 / (2 * distFromCentre + 1d));
+					return Color.hsb((angleDeg + (drawEvent == DrawEvent.LINE ? 0 : 45) % 360),
+									 distToBorderRatio, 1,
+									 drawEvent == DrawEvent.LINE ? 1 : getOpacity(distFromCentre));
 				else
-					return Color.hsb(0, 0, 1 - 1 / (3 * distToBorderRatio + 1d), 1 - 1 / (2 * distFromCentre + 1d));
+					return Color.hsb(0, 0, (1 - distToBorderRatio) / 2,
+									 drawEvent == DrawEvent.LINE ? 1 : getOpacity(distFromCentre));
 			case MOVE_INNER_CIRCLE:
 			case MOVE_OUTER_CIRCLE:
 				double color = Math.random() / 4;
@@ -49,23 +51,31 @@ public class ColorWheelScheme implements ColorScheme {
 		}
 	}
 
+	private double getOpacity(double distFromCentre) {
+		return 1 / (1d + Math.exp((-1 / (Main.screenHeight / 3d)) * distFromCentre));
+	}
+
 	/**
 	 * Calculates the distance from the centre of the screen to the border of the screen, using the slope of the line
-	 * from the centre of the screen to the cursor position.
+	 * from the centre of the screen to the mouse position.
 	 *
-	 * @param x Mouse x coordinate on screen
-	 * @param y Mouse y coordinate on screen
+	 * @param px Mouse x coordinate on screen
+	 * @param py Mouse y coordinate on screen
 	 * @return Distance from the centre of the screen to the border
 	 */
-	private double distToBorder(double x, double y) {
-		double slope = y / x;
+	private double distToBorder(double px, double py) {
+		double slope = (py - centrePoint.y) / (centrePoint.x - px);
 		double borderX, borderY;
+
+		double dy = py - centrePoint.y;
+		double dx = centrePoint.x - px;
+
 		if (slope > diagScreenSlope || slope < -diagScreenSlope) {
-			borderX = (Main.screenHeight / 2 * (y > 0 ? 1 : -1) + y) / slope + x;
-			borderY = (borderX * y) / x;
+			borderX = ((Main.screenHeight / 2) * (py > 0 ? 1 : -1) - dy) / slope + dx;
+			borderY = (borderX * dy) / dx;
 		} else {
-			borderY = slope * (Main.screenWidth / 2 * (x > 0 ? 1 : -1) - x) + y;
-			borderX = (borderY * x) / y;
+			borderY = slope * ((Main.screenWidth / 2) * (px > 0 ? 1 : -1) - dx) + dy;
+			borderX = (borderY * dx) / dy;
 		}
 
 		return Math.sqrt(borderX * borderX + borderY * borderY);
