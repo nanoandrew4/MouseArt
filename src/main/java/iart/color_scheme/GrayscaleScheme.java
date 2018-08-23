@@ -8,7 +8,7 @@ import java.awt.*;
 /**
  * Gray scale color scheme. Used when determining the color with which to draw various objects on screen.
  */
-public class GrayScheme implements ColorScheme {
+public class GrayscaleScheme implements ColorScheme {
 	public Color getColor(DrawEvent drawEvent, Point eventLoc) {
 		switch (drawEvent) {
 			case LINE:

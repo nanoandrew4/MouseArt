@@ -90,10 +90,16 @@ public class MouseHook implements NativeMouseInputListener {
 	}
 
 	private void drawLine(int startX, int startY, int endX, int endY) {
-		Platform.runLater(() -> drawer.drawLine(startX, startY, endX, endY));
+		Platform.runLater(() -> drawer.drawLine(
+				(int) (startX * Main.resMultiplier), (int) (startY * Main.resMultiplier),
+				(int) (endX * Main.resMultiplier), (int) (endY * Main.resMultiplier)
+		));
 	}
 
 	private void drawCircle(DrawEvent drawEvent, int centreX, int centreY, int radius) {
-		Platform.runLater(() -> drawer.drawCircle(drawEvent, centreX, centreY, radius));
+		Platform.runLater(() -> drawer.drawCircle(
+				drawEvent, (int) (centreX * Main.resMultiplier), (int) (centreY * Main.resMultiplier),
+				(int) (radius * Main.resMultiplier))
+		);
 	}
 }

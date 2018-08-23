@@ -14,7 +14,7 @@ public class ColorWheelScheme implements ColorScheme {
 	private static Point centrePoint = new Point(Main.screenWidth / 2, Main.screenHeight / 2);
 	private static final double diagScreenSlope = Main.screenHeight / (double) Main.screenWidth;
 
-	private boolean grayscale = false; // TODO: HSV grayscale pending
+	boolean grayscale = false;
 
 	@Override
 	public Color getColor(DrawEvent drawEvent, Point eventLoc) {
@@ -33,14 +33,17 @@ public class ColorWheelScheme implements ColorScheme {
 				double distToBorder = distToBorder(eventLoc.x - centrePoint.x, centrePoint.y - eventLoc.y);
 				double distToBorderRatio = Math.min(Math.max(distFromCentre / distToBorder, 0d), 1d);
 
-				return Color.hsb(angleDeg + (drawEvent == DrawEvent.LINE ? 0 : 30),
-								 1 - 1 / (3 * distToBorderRatio + 1d), 1, 1);
+				if (!grayscale)
+					return Color.hsb((angleDeg + (drawEvent == DrawEvent.LINE ? 0 : 90) % 360),
+									 1 - 1 / (3 * distToBorderRatio + 1d), 1, 1 - 1 / (2 * distFromCentre + 1d));
+				else
+					return Color.hsb(0, 0, 1 - 1 / (3 * distToBorderRatio + 1d), 1 - 1 / (2 * distFromCentre + 1d));
 			case MOVE_INNER_CIRCLE:
 			case MOVE_OUTER_CIRCLE:
 				double color = Math.random() / 4;
 				return Color.gray(color, color);
 			case BACKGROUND:
-				return Color.BLACK;
+				return grayscale ? Color.WHITE : Color.BLACK;
 			default:
 				return Color.BLACK;
 		}

@@ -6,12 +6,22 @@ import javafx.scene.shape.ArcType;
 
 import java.awt.*;
 
+/**
+ * Draws objects to the canvas as required by the listener classes. Once the drawing has been performed, the preview
+ * may be updated to reflect the latest draw operations.
+ */
 public class Drawer {
 	private GraphicsContext gc;
 	private Point point;
 
 	private Main main;
 
+	/**
+	 * Sets up the drawer to be able to draw on the specified canvas.
+	 *
+	 * @param main Main class that instantiated this class
+	 * @param gc   GraphicsContext of the canvas on which to draw
+	 */
 	public Drawer(Main main, GraphicsContext gc) {
 		this.main = main;
 		this.gc = gc;

@@ -1,7 +1,7 @@
 package iart;
 
 import iart.color_scheme.ColorScheme;
-import iart.color_scheme.GrayScheme;
+import iart.color_scheme.GrayscaleScheme;
 import iart.draw.DrawEvent;
 import iart.draw.Drawer;
 import iart.listeners.keyboard.KeyHook;
@@ -52,16 +52,20 @@ public class Main extends Application {
 	private Group previewGroup;
 	private Canvas canvas;
 
-	private MenuBar menuBar;
-	private MenuItem startRecording, pauseRecording, stopRecording;
-	private ImageView geomPreview;
+	private MenuBar menuBar = new MenuBar();
+	private MenuItem startRecording = new MenuItem("Start"), pauseRecording = new MenuItem("Pause"),
+			stopRecording = new MenuItem("Stop");
+	private ImageView geomPreview = new ImageView(); // Canvas preview
 
-	private SnapshotParameters snapshotParameters;
+	private SnapshotParameters snapshotParameters = new SnapshotParameters();
 
-	private final String[] colorSchemesStr = {"GrayScheme", "ColorWheelScheme", "RainbowScheme"};
-	public static ColorScheme colorScheme = new GrayScheme();
+	private final String[] colorSchemesStr = {"Grayscale", "ColorWheel", "Rainbow", "GrayscaleWheel"};
+	public static ColorScheme colorScheme = new GrayscaleScheme();
 
 	public static String keysFileLoc = System.getProperty("user.home") + "/.iart_keys";
+
+	private static Spinner<Double> resMultiplierSpinner = new Spinner<>(1d, Double.MAX_VALUE, 1d, 0.1);
+	public static double resMultiplier = 1d;
 
 	public static void main(String[] args) {
 		launch(args);
@@ -86,13 +90,8 @@ public class Main extends Application {
 		sceneWidth = (int) (screenWidth * .25);
 		sceneHeight = (int) (screenHeight * .25);
 
-		geometryScene = new Scene(new Group(), screenWidth, screenHeight);
 		previewScene = new Scene(previewGroup = new Group(), sceneWidth, sceneHeight);
 
-		geomPreview = new ImageView(); // Resized view of the canvas will go in here as an Image
-		snapshotParameters = new SnapshotParameters(); // Update scene size with to determine resize of snapshot
-
-		menuBar = new MenuBar();
 		menuBar.prefWidthProperty().bind(primaryStage.widthProperty());
 		menuBar.setOnMouseEntered(event -> {
 			if (state == State.RECORDING)
@@ -100,7 +99,7 @@ public class Main extends Application {
 		});
 		menuBar.setOnMouseExited(event -> {
 			if (state == State.RECORDING)
-				menuBar.setOpacity(0.2);
+				menuBar.setOpacity(.2);
 		});
 
 		setupMenuBar(primaryStage);
@@ -124,13 +123,8 @@ public class Main extends Application {
 	private void setupMenuBar(Stage primaryStage) {
 		Menu fileMenu = new Menu("File");
 
-		startRecording = new MenuItem("Start");
 		startRecording.setOnAction(event -> startRecording());
-
-		pauseRecording = new MenuItem("Pause");
 		pauseRecording.setOnAction(event -> pauseRecording());
-
-		stopRecording = new MenuItem("Stop");
 		stopRecording.setOnAction(event -> stopRecording(primaryStage));
 
 		fileMenu.getItems().addAll(startRecording, pauseRecording, stopRecording);
@@ -151,8 +145,12 @@ public class Main extends Application {
 			colorSchemeMenu.getItems().add(scheme);
 		}
 
+		resMultiplierSpinner.setEditable(true);
+
+		Menu resSpinnerMenu = new Menu("Resolution Scaling", null, new CustomMenuItem(resMultiplierSpinner, false));
+
 		// Setup menu bar
-		menuBar.getMenus().addAll(fileMenu, colorSchemeMenu);
+		menuBar.getMenus().addAll(fileMenu, colorSchemeMenu, resSpinnerMenu);
 	}
 
 	/**
@@ -162,8 +160,8 @@ public class Main extends Application {
 	private void loadColorSchemes() {
 		for (String s : colorSchemesStr) {
 			try {
-				ColorScheme.colorSchemes.put(s, (ColorScheme) Class.forName("iart.color_scheme." + s).getConstructor()
-																   .newInstance());
+				ColorScheme.colorSchemes.put(s, (ColorScheme) Class.forName("iart.color_scheme." + s + "Scheme")
+																   .getConstructor().newInstance());
 			} catch (Exception e) {
 				System.err.println("Color scheme: \"" + s + "\" could not be found.");
 			}
@@ -204,19 +202,21 @@ public class Main extends Application {
 		// Track if UI is resized, and update previewScene size appropriately
 		previewScene.widthProperty().addListener((obs, oldVal, newVal) -> {
 			sceneWidth = newVal.intValue();
-			snapshotParameters.setTransform(
-					Transform.scale(sceneWidth / (double) screenWidth, sceneHeight / (double) screenHeight)
-			);
+			updateSnapshotParams();
 			refreshPreview();
 		});
 
 		previewScene.heightProperty().addListener((obs, oldVal, newVal) -> {
 			sceneHeight = newVal.intValue();
-			snapshotParameters.setTransform(
-					Transform.scale(sceneWidth / (double) screenWidth, sceneHeight / (double) screenHeight)
-			);
+			updateSnapshotParams();
 			refreshPreview();
 		});
+	}
+
+	private void updateSnapshotParams() {
+		snapshotParameters.setTransform(
+				Transform.scale(sceneWidth / (double) screenWidth, sceneHeight / (double) screenHeight)
+		);
 	}
 
 	/**
@@ -227,6 +227,16 @@ public class Main extends Application {
 			return;
 		state = State.RECORDING;
 		menuBar.setOpacity(0.5);
+
+		resMultiplier = Math.sqrt(resMultiplierSpinner.getValue());
+
+		screenWidth = (int) (Screen.getScreens().get(Screen.getScreens().size() - 1).getBounds().getMaxX() *
+							 resMultiplier);
+		screenHeight = (int) (Screen.getScreens().get(Screen.getScreens().size() - 1).getBounds().getMaxY() *
+							  resMultiplier);
+		geometryScene = new Scene(new Group(), screenWidth, screenHeight);
+
+		updateSnapshotParams();
 
 		previewScene.setRoot(previewGroup = new Group(geomPreview, menuBar));
 		canvas = new Canvas(screenWidth, screenHeight);
