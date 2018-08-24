@@ -13,6 +13,7 @@ public class GrayscaleScheme implements ColorScheme {
 		switch (drawEvent) {
 			case LINE:
 				return Color.BLACK;
+			case SQUARE:
 			case LMOUSE_PRESS:
 				return Color.gray(Math.random() / 2.5, Math.random() / 2 + 0.5);
 			case MOVE_INNER_CIRCLE:

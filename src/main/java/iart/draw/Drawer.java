@@ -11,10 +11,10 @@ import java.awt.*;
  * may be updated to reflect the latest draw operations.
  */
 public class Drawer {
+	private Main main;
+
 	private GraphicsContext gc;
 	private Point point;
-
-	private Main main;
 
 	/**
 	 * Sets up the drawer to be able to draw on the specified canvas.
@@ -77,7 +77,7 @@ public class Drawer {
 		point.x = topLeftX;
 		point.y = topLeftY;
 
-		gc.setFill(Main.colorScheme.getColor(DrawEvent.SQUARE, point));
+		gc.setStroke(Main.colorScheme.getColor(DrawEvent.SQUARE, point));
 		gc.strokeRect(topLeftX, topLeftY, width, width);
 		main.refreshPreview();
 	}

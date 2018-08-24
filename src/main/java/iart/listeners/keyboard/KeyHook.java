@@ -56,8 +56,7 @@ public class KeyHook implements NativeKeyListener {
 				int drawPosY = topLeftY + rand.nextInt((screenHeight / layout.getNumOfRows()) - squareMaxWidth);
 
 				Platform.runLater(() -> drawer.drawSquare(
-						(int) (drawPosX * Main.resMultiplier), (int) (drawPosY * Main.resMultiplier),
-						rand.nextInt((int) (squareMaxWidth * Main.resMultiplier) - 10) + 10)
+						drawPosX, drawPosY, rand.nextInt(squareMaxWidth - 10) + 10)
 				);
 			}
 		}

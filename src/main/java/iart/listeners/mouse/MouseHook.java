@@ -99,7 +99,7 @@ public class MouseHook implements NativeMouseInputListener {
 	private void drawCircle(DrawEvent drawEvent, int centreX, int centreY, int radius) {
 		Platform.runLater(() -> drawer.drawCircle(
 				drawEvent, (int) (centreX * Main.resMultiplier), (int) (centreY * Main.resMultiplier),
-				(int) (radius * Main.resMultiplier))
+				radius)
 		);
 	}
 }

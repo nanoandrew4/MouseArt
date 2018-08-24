@@ -20,6 +20,7 @@ public class ColorWheelScheme implements ColorScheme {
 	public Color getColor(DrawEvent drawEvent, Point eventLoc) {
 		switch (drawEvent) {
 			case LINE:
+			case SQUARE:
 			case LMOUSE_PRESS:
 				double angleRad = Math.atan((double) (centrePoint.y - eventLoc.y) / (eventLoc.x - centrePoint.x));
 				double angleDeg = Math.toDegrees(angleRad);
@@ -34,12 +35,12 @@ public class ColorWheelScheme implements ColorScheme {
 				double distToBorderRatio = Math.min(Math.max(distFromCentre / distToBorder, 0d), 1d);
 
 				if (!grayscale)
-					return Color.hsb((angleDeg + (drawEvent == DrawEvent.LINE ? 0 : 45) % 360),
+					return Color.hsb((angleDeg + (drawEvent == DrawEvent.LINE ? 0 : 30) % 360),
 									 distToBorderRatio, 1,
-									 drawEvent == DrawEvent.LINE ? 1 : getOpacity(distFromCentre));
+									 drawEvent == DrawEvent.LMOUSE_PRESS ? getOpacity(distFromCentre): 1);
 				else
 					return Color.hsb(0, 0, (1 - distToBorderRatio) / 2,
-									 drawEvent == DrawEvent.LINE ? 1 : getOpacity(distFromCentre));
+									 drawEvent == DrawEvent.LMOUSE_PRESS ? getOpacity(distFromCentre): 1);
 			case MOVE_INNER_CIRCLE:
 			case MOVE_OUTER_CIRCLE:
 				double color = Math.random() / 4;
@@ -52,7 +53,7 @@ public class ColorWheelScheme implements ColorScheme {
 	}
 
 	private double getOpacity(double distFromCentre) {
-		return 1 / (1d + Math.exp((-1 / (Main.screenHeight / 3d)) * distFromCentre));
+		return 1 / (1d + 2 * Math.exp((-1 / (Main.screenHeight / 2d)) * distFromCentre));
 	}
 
 	/**
@@ -64,11 +65,11 @@ public class ColorWheelScheme implements ColorScheme {
 	 * @return Distance from the centre of the screen to the border
 	 */
 	private double distToBorder(double px, double py) {
-		double slope = (py - centrePoint.y) / (centrePoint.x - px);
-		double borderX, borderY;
-
 		double dy = py - centrePoint.y;
 		double dx = centrePoint.x - px;
+
+		double slope = dy / dx;
+		double borderX, borderY;
 
 		if (slope > diagScreenSlope || slope < -diagScreenSlope) {
 			borderX = ((Main.screenHeight / 2) * (py > 0 ? 1 : -1) - dy) / slope + dx;

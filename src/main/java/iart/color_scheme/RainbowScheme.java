@@ -27,6 +27,7 @@ public class RainbowScheme implements ColorScheme {
 		switch (drawEvent) {
 			case LINE:
 				return colors.get((int) (System.currentTimeMillis() - start) % colors.size());
+			case SQUARE:
 			case LMOUSE_PRESS:
 				int r = (int) (Math.random() * 255);
 				int g = (int) (Math.random() * 255);
