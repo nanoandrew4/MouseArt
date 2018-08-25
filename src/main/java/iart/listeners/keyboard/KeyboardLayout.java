@@ -118,6 +118,7 @@ public class KeyboardLayout extends Thread implements NativeKeyListener, Seriali
 	public void nativeKeyPressed(NativeKeyEvent nativeKeyEvent) {
 		int prevKey = currKey;
 		currKey = nativeKeyEvent.getKeyCode();
+
 		if (firstKey == -1) {
 			firstKey = currKey;
 			layoutUI.updateFirstKeyText(NativeKeyEvent.getKeyText(firstKey));

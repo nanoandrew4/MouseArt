@@ -1,4 +1,4 @@
-package iart.color_scheme;
+package iart.color_schemes;
 
 import iart.draw.DrawEvent;
 import iart.Main;
@@ -19,8 +19,8 @@ public class ColorWheelScheme implements ColorScheme {
 	@Override
 	public Color getColor(DrawEvent drawEvent, Point eventLoc) {
 		switch (drawEvent) {
-			case LINE:
-			case SQUARE:
+			case MOUSE_MOVE:
+			case KEYSTROKE:
 			case LMOUSE_PRESS:
 				double angleRad = Math.atan((double) (centrePoint.y - eventLoc.y) / (eventLoc.x - centrePoint.x));
 				double angleDeg = Math.toDegrees(angleRad);
@@ -32,19 +32,18 @@ public class ColorWheelScheme implements ColorScheme {
 				double distFromCentre = Math.sqrt((eventLoc.y - centrePoint.y) * (eventLoc.y - centrePoint.y) +
 												  (eventLoc.x - centrePoint.x) * (eventLoc.x - centrePoint.x));
 				double distToBorder = distToBorder(eventLoc.x, eventLoc.y);
+				// Min/Max removes rounding errors, if there are any
 				double distToBorderRatio = Math.min(Math.max(distFromCentre / distToBorder, 0d), 1d);
 
 				if (!grayscale)
-					return Color.hsb((angleDeg + (drawEvent == DrawEvent.LINE ? 0 : 30) % 360),
-									 distToBorderRatio, 1,
-									 drawEvent == DrawEvent.LMOUSE_PRESS ? getOpacity(distFromCentre): 1);
+					return Color.hsb((angleDeg + (drawEvent == DrawEvent.MOUSE_MOVE ? 0 : 30) % 360), distToBorderRatio, 1,
+									 drawEvent == DrawEvent.LMOUSE_PRESS ? getOpacity(distFromCentre) : 1);
 				else
 					return Color.hsb(0, 0, (1 - distToBorderRatio) / 2,
-									 drawEvent == DrawEvent.LMOUSE_PRESS ? getOpacity(distFromCentre): 1);
-			case MOVE_INNER_CIRCLE:
+									 drawEvent == DrawEvent.LMOUSE_PRESS ? getOpacity(distFromCentre) : 1);
 			case MOVE_OUTER_CIRCLE:
-				double color = Math.random() / 4;
-				return Color.gray(color, color);
+				return grayscale ? Color.BLACK : Color.WHITE;
+			case MOVE_INNER_CIRCLE:
 			case BACKGROUND:
 				return grayscale ? Color.WHITE : Color.BLACK;
 			default:
@@ -52,6 +51,17 @@ public class ColorWheelScheme implements ColorScheme {
 		}
 	}
 
+	@Override
+	public void unregisterColorScheme() {
+	}
+
+	/**
+	 * Sigmoid function which returns a value between 0.33 and 1, which is used to determine the opacity of a shape.
+	 * The value is calculated using the distance of shape being drawn from the centre of the screen.
+	 *
+	 * @param distFromCentre Distance from the centre of the screen to the object being drawn
+	 * @return Value between 0.33-1
+	 */
 	private double getOpacity(double distFromCentre) {
 		return 1 / (1d + 2 * Math.exp((-1 / (Main.screenHeight / 2d)) * distFromCentre));
 	}

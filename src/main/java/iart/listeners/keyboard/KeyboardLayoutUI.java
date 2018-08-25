@@ -54,7 +54,6 @@ public class KeyboardLayoutUI {
 		info.setFont(font);
 
 		info.wrappingWidthProperty().bind(scene.widthProperty());
-
 		pane.getChildren().add(info);
 
 		firstKey = new Text(0, info.getBoundsInLocal().getHeight() + font.getSize(), "First key: Waiting...");

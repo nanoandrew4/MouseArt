@@ -1,6 +1,7 @@
 package iart.draw;
 
 import iart.Main;
+import iart.Recorder;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.shape.ArcType;
 
@@ -14,7 +15,7 @@ public class Drawer {
 	private Main main;
 
 	private GraphicsContext gc;
-	private Point point;
+	private Point point = new Point();
 
 	/**
 	 * Sets up the drawer to be able to draw on the specified canvas.
@@ -25,8 +26,6 @@ public class Drawer {
 	public Drawer(Main main, GraphicsContext gc) {
 		this.main = main;
 		this.gc = gc;
-
-		point = new Point();
 	}
 
 	/**
@@ -41,7 +40,7 @@ public class Drawer {
 		point.x = startX;
 		point.y = startY;
 
-		gc.setStroke(Main.colorScheme.getColor(DrawEvent.LINE, point));
+		gc.setStroke(Recorder.colorScheme.getColor(DrawEvent.MOUSE_MOVE, point));
 		gc.setLineWidth(1);
 		gc.strokeLine(startX, startY, endX, endY);
 		main.refreshPreview();
@@ -59,10 +58,14 @@ public class Drawer {
 		point.x = centreX;
 		point.y = centreY;
 
-		gc.setFill(Main.colorScheme.getColor(drawEvent, point));
-		gc.fillArc(centreX - radius / 2, centreY - radius / 2, radius, radius, 0, 360, ArcType.ROUND);
-		if (drawEvent == DrawEvent.MOVE_OUTER_CIRCLE)
+		if (drawEvent == DrawEvent.MOVE_OUTER_CIRCLE) {
+			gc.setStroke(Recorder.colorScheme.getColor(drawEvent, point));
 			gc.strokeArc(centreX - radius / 2, centreY - radius / 2, radius, radius, 0, 360, ArcType.OPEN);
+		} else {
+			gc.setFill(Recorder.colorScheme.getColor(drawEvent, point));
+			gc.fillArc(centreX - radius / 2, centreY - radius / 2, radius, radius, 0, 360, ArcType.ROUND);
+		}
+
 		main.refreshPreview();
 	}
 
@@ -77,7 +80,7 @@ public class Drawer {
 		point.x = topLeftX;
 		point.y = topLeftY;
 
-		gc.setStroke(Main.colorScheme.getColor(DrawEvent.SQUARE, point));
+		gc.setStroke(Recorder.colorScheme.getColor(DrawEvent.KEYSTROKE, point));
 		gc.strokeRect(topLeftX, topLeftY, width, width);
 		main.refreshPreview();
 	}

@@ -5,5 +5,5 @@ package iart.draw;
  * the specific object being drawn.
  */
 public enum DrawEvent {
-	LINE, SQUARE, MOVE_INNER_CIRCLE, MOVE_OUTER_CIRCLE, LMOUSE_PRESS, BACKGROUND
+	MOUSE_MOVE, KEYSTROKE, MOVE_INNER_CIRCLE, MOVE_OUTER_CIRCLE, LMOUSE_PRESS, BACKGROUND
 }

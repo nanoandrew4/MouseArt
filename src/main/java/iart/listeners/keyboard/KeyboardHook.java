@@ -1,5 +1,6 @@
 package iart.listeners.keyboard;
 
+import iart.Recorder;
 import iart.draw.Drawer;
 import iart.Main;
 import iart.State;
@@ -14,7 +15,7 @@ import java.util.Random;
 /**
  * Listens for keyboard events and triggers draw events to create a visual representation of the users keyboard use.
  */
-public class KeyHook implements NativeKeyListener {
+public class KeyboardHook implements NativeKeyListener {
 	private Drawer drawer;
 
 	private KeyboardLayout layout;
@@ -28,11 +29,11 @@ public class KeyHook implements NativeKeyListener {
 	 * Sets up the keyboard listener and registers it as a global listener. Once this constructor returns, the keyboard
 	 * listener is fully operational, and will start processing keystrokes immediately.
 	 *
-	 * @param drawer
+	 * @param drawer       Drawer instance to draw with
 	 * @param screenWidth  Width of the screen(s) in pixels
 	 * @param screenHeight Height of the screen(s) in pixels
 	 */
-	public KeyHook(Drawer drawer, int screenWidth, int screenHeight) {
+	public KeyboardHook(Drawer drawer, int screenWidth, int screenHeight) {
 		this.drawer = drawer;
 		this.screenWidth = screenWidth;
 		this.screenHeight = screenHeight;
@@ -45,7 +46,7 @@ public class KeyHook implements NativeKeyListener {
 
 	@Override
 	public void nativeKeyPressed(NativeKeyEvent nativeKeyEvent) {
-		if (Main.state == State.RECORDING) {
+		if (Recorder.state == State.RECORDING) {
 			Point keyPos = layout.getLayout().get(nativeKeyEvent.getKeyCode());
 
 			if (keyPos != null) {
@@ -64,11 +65,9 @@ public class KeyHook implements NativeKeyListener {
 
 	@Override
 	public void nativeKeyReleased(NativeKeyEvent nativeKeyEvent) {
-		// N/A
 	}
 
 	@Override
 	public void nativeKeyTyped(NativeKeyEvent nativeKeyEvent) {
-		// N/A
 	}
 }
