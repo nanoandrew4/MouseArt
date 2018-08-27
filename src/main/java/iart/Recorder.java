@@ -20,6 +20,9 @@ import javax.imageio.ImageIO;
 import java.io.File;
 import java.io.IOException;
 
+/**
+ *
+ */
 public class Recorder {
 	private MouseHook mouseHook;
 	private KeyboardHook keyboardHook;

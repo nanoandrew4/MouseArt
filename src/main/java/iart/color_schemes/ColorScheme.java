@@ -14,7 +14,9 @@ public interface ColorScheme {
 	 * Color schemes to be loaded for use. Must follow class name, minus the "Scheme" part of the class name, that gets
 	 * added in.
 	 */
-	String[] colorSchemesStr = {"Grayscale", "ColorWheel", "Rainbow", "GrayscaleWheel", "ColorFall"};
+	String[] colorSchemesStr = {"Grayscale", "Rainbow", "ColorFall"};
+
+	String[] colorSchemeSupertypes = {"Wheel"};
 
 	/**
 	 * Contains all ColorScheme implementations that were loaded by Main.loadColorSchemes(). Useful for swapping

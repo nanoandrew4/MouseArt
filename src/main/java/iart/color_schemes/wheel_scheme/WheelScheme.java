@@ -1,5 +1,6 @@
-package iart.color_schemes;
+package iart.color_schemes.wheel_scheme;
 
+import iart.color_schemes.ColorScheme;
 import iart.draw.DrawEvent;
 import iart.Main;
 import javafx.scene.paint.Color;
@@ -7,14 +8,16 @@ import javafx.scene.paint.Color;
 import java.awt.*;
 
 /**
- * Color scheme that makes the canvas emulate a color wheel. The cursor position is used to calculate the HSV color
- * that the shape should be drawn with.
+ *
  */
-public class ColorWheelScheme implements ColorScheme {
+public abstract class WheelScheme implements ColorScheme {
+	public static String[] schemes = {"ColorWheel", "GrayscaleWheel", "InvColorWheel", "InvGrayscale"};
+
 	private static Point centrePoint = new Point(Main.screenWidth / 2, Main.screenHeight / 2);
 	private static final double diagScreenSlope = Main.screenHeight / (double) Main.screenWidth;
 
-	boolean grayscale = false;
+	boolean grayscale;
+	boolean inverted;
 
 	@Override
 	public Color getColor(DrawEvent drawEvent, Point eventLoc) {
@@ -35,12 +38,7 @@ public class ColorWheelScheme implements ColorScheme {
 				// Min/Max removes rounding errors, if there are any
 				double distToBorderRatio = Math.min(Math.max(distFromCentre / distToBorder, 0d), 1d);
 
-				if (!grayscale)
-					return Color.hsb((angleDeg + (drawEvent == DrawEvent.MOUSE_MOVE ? 0 : 30) % 360), distToBorderRatio, 1,
-									 drawEvent == DrawEvent.LMOUSE_PRESS ? getOpacity(distFromCentre) : 1);
-				else
-					return Color.hsb(0, 0, (1 - distToBorderRatio) / 2,
-									 drawEvent == DrawEvent.LMOUSE_PRESS ? getOpacity(distFromCentre) : 1);
+				return getSchemeColor(drawEvent, angleDeg, distToBorderRatio, distFromCentre);
 			case MOVE_OUTER_CIRCLE:
 				return grayscale ? Color.BLACK : Color.WHITE;
 			case MOVE_INNER_CIRCLE:
@@ -49,6 +47,14 @@ public class ColorWheelScheme implements ColorScheme {
 			default:
 				return Color.BLACK;
 		}
+	}
+
+	private Color getSchemeColor(DrawEvent drawEvent, double angle, double distToBorderRatio, double distFromCentre) {
+		return Color.hsb(grayscale ? 0 : (angle + (drawEvent == DrawEvent.MOUSE_MOVE ? 0 : 30) % 360),
+						 grayscale ? 0 : (inverted ? 1 - distToBorderRatio : distFromCentre),
+						 grayscale ? (inverted ? 1 - ((1 - distToBorderRatio) / 2) : (1 - distToBorderRatio) / 2) : 1,
+						 drawEvent == DrawEvent.LMOUSE_PRESS ? getOpacity(distFromCentre) : 1
+		);
 	}
 
 	@Override

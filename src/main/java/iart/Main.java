@@ -29,7 +29,7 @@ public class Main extends Application {
 	private Recorder recorder = new Recorder();
 
 	public static int screenWidth, screenHeight;
-	private int sceneWidth, sceneHeight;
+	private double sceneWidth, sceneHeight;
 	private boolean windowFocused = false;
 
 	private Scene previewScene;

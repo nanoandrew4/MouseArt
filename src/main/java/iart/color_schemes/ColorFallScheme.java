@@ -20,12 +20,14 @@ public class ColorFallScheme implements ColorScheme, NativeMouseWheelListener {
 	public Color getColor(DrawEvent drawEvent, Point eventLoc) {
 		switch (drawEvent) {
 			case MOUSE_MOVE:
-				return Color.hsb(currHue, 1 - eventLoc.y / Main.screenHeight, 1, 1);
+				return Color.hsb(currHue, 1d - ((double) eventLoc.y / Main.screenHeight), 1, 1);
 			case KEYSTROKE:
-				return Color.hsb(currHue, Math.min(1 - (eventLoc.y / Main.screenHeight) + (Math.random() / 10d), 0d),
+				return Color.hsb(currHue,
+								 Math.min(1d - ((double) eventLoc.y / Main.screenHeight) + (Math.random() / 10d), 0d),
 								 1, Math.random());
 			case LMOUSE_PRESS:
-				return Color.hsb(currHue, Math.max(1 - (eventLoc.y / Main.screenHeight) - (Math.random() / 10d), 1d),
+				return Color.hsb(currHue,
+								 Math.max(1d - ((double) eventLoc.y / Main.screenHeight) - (Math.random() / 10d), 1d),
 								 1, Math.random());
 			case MOVE_INNER_CIRCLE:
 				return Color.WHITE;

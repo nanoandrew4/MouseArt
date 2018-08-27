@@ -18,10 +18,10 @@ public class GrayscaleScheme implements ColorScheme {
 			case KEYSTROKE:
 			case LMOUSE_PRESS:
 				return Color.gray(Math.random() / 2.5, Math.random() / 2 + 0.5);
-			case MOVE_INNER_CIRCLE:
 			case MOVE_OUTER_CIRCLE:
 				double color = Math.random() / 4 + 0.75;
 				return Color.gray(color, color);
+			case MOVE_INNER_CIRCLE:
 			case BACKGROUND:
 				return Color.WHITE;
 			default:
