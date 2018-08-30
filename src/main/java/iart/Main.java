@@ -9,6 +9,7 @@ import javafx.scene.Scene;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
+import javafx.scene.image.WritableImage;
 import javafx.scene.transform.Transform;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
@@ -17,7 +18,6 @@ import org.jnativehook.GlobalScreen;
 import org.jnativehook.NativeHookException;
 
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -50,7 +50,7 @@ public class Main extends Application {
 	// Location on disk of the keyboard layout
 	public static final String keysFileLoc = System.getProperty("user.home") + "/.iart_keys";
 
-	private static Spinner<Double> resMultiplierSpinner = new Spinner<>(1d, Double.MAX_VALUE, 1d, 0.1);
+	private static Spinner<Double> resMultiplierSpinner = new Spinner<>(1d, 16d, 1d, 0.1);
 
 	public static void main(String[] args) {
 		launch(args);
@@ -111,7 +111,7 @@ public class Main extends Application {
 		MenuItem resetKeyboardLayout = new MenuItem("Reset keyboard layout");
 		resetKeyboardLayout.setOnAction(event -> new KeyboardLayoutUI(primaryStage));
 		startRecording.setOnAction(event -> {
-			if (recorder.startRecording(this, resMultiplierSpinner.getValue())) {
+			if (recorder.startRecording(this, Math.sqrt(resMultiplierSpinner.getValue()))) {
 				menuBar.setOpacity(0.5);
 				previewScene.setRoot(previewGroup = new Group(geomPreview, menuBar));
 				updateSnapshotParams();
@@ -145,7 +145,7 @@ public class Main extends Application {
 		try {
 			finder.add(new File(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI()));
 		} catch (URISyntaxException e) {
-			e.printStackTrace(); // TODO: REMOVE
+			e.printStackTrace();
 		}
 		ClassFilter filter = new AndClassFilter(new SubclassClassFilter(ColorScheme.class));
 
@@ -177,8 +177,9 @@ public class Main extends Application {
 						superScheme, (ColorScheme) Class.forName("iart.color_schemes." + superScheme + "Scheme")
 														.getConstructor().newInstance()
 				);
-				String[] schemeName = superScheme.split("\\.");
-				RadioMenuItem scheme = new RadioMenuItem(schemeName[schemeName.length - 1]);
+
+				String[] schemeDisplayName = superScheme.split("\\.");
+				RadioMenuItem scheme = new RadioMenuItem(schemeDisplayName[schemeDisplayName.length - 1]);
 				scheme.setToggleGroup(toggleGroup);
 				scheme.setOnAction(event -> Recorder.colorScheme = swapColorScheme(superScheme));
 				if (Recorder.colorScheme.getClass() == ColorScheme.colorSchemes.get(superScheme).getClass())
@@ -213,7 +214,12 @@ public class Main extends Application {
 	public void refreshPreview() {
 		if (!windowFocused || recorder.getCanvas() == null)
 			return;
-		geomPreview.setImage(recorder.getCanvas().snapshot(snapshotParameters, null));
+		try {
+			geomPreview.setImage(recorder.getCanvas().snapshot(snapshotParameters, null));
+		} catch (Exception e) {
+			WritableImage img = Recorder.exportCanvasToImg(recorder.getCanvas());
+			geomPreview.setImage(img);
+		}
 	}
 
 	/**
@@ -243,7 +249,6 @@ public class Main extends Application {
 			updateSnapshotParams();
 			refreshPreview();
 		});
-
 		previewScene.heightProperty().addListener((obs, oldVal, newVal) -> {
 			sceneHeight = newVal.intValue();
 			updateSnapshotParams();

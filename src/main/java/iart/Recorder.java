@@ -7,10 +7,13 @@ import iart.draw.Drawer;
 import iart.listeners.keyboard.KeyboardHook;
 import iart.listeners.mouse.MouseHook;
 import javafx.embed.swing.SwingFXUtils;
+import javafx.geometry.Rectangle2D;
+import javafx.scene.Node;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.MenuItem;
+import javafx.scene.image.WritableImage;
 import javafx.stage.FileChooser;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
@@ -32,10 +35,6 @@ public class Recorder {
 	public static double resMultiplier = 1d;
 
 	private Canvas canvas;
-
-	Recorder() {
-
-	}
 
 	Canvas getCanvas() {
 		return canvas;
@@ -109,6 +108,8 @@ public class Recorder {
 	 * @param stage JavaFX stage, required for FileChooser
 	 */
 	private void saveImage(Stage stage) {
+		stage.setTitle("iArt - Saving to disk...");
+
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.getExtensionFilters().addAll(
 				new FileChooser.ExtensionFilter("PNG Files (*.png)", "*.png")
@@ -119,12 +120,47 @@ public class Recorder {
 		File file = fileChooser.showSaveDialog(stage);
 
 		if (file != null) {
+			WritableImage img = exportCanvasToImg(canvas);
 			try {
-				ImageIO.write(SwingFXUtils.fromFXImage(canvas.snapshot(new SnapshotParameters(), null), null), "png",
+				ImageIO.write(SwingFXUtils.fromFXImage(img, null), "png",
 							  file);
 			} catch (IOException e) {
-				System.err.println("Error writing image to disk...");
+				System.err.println("Error writing image to disk");
 			}
 		}
+
+		stage.setTitle("iArt");
+	}
+
+	/**
+	 * https://stackoverflow.com/a/51766048
+	 * @param node
+	 */
+	static WritableImage exportCanvasToImg(final Node node) {
+		final int w = (int) node.getLayoutBounds().getWidth();
+		final int h = (int) node.getLayoutBounds().getHeight();
+		final WritableImage full = new WritableImage(w, h);
+
+		// defines the number of tiles to export (use higher value for bigger resolution)
+		final int size = Math.max(w / 1920, Math.max(h / 1080, 1));
+		final int tileWidth = w / size;
+		final int tileHeight = h / size;
+
+		try {
+			for (int col = 0; col < size; ++col) {
+				for (int row = 0; row < size; ++row) {
+					final int x = row * tileWidth;
+					final int y = col * tileHeight;
+					final SnapshotParameters params = new SnapshotParameters();
+					params.setViewport(new Rectangle2D(x, y, tileWidth, tileHeight));
+
+					full.getPixelWriter().setPixels(x, y, tileWidth, tileHeight, node.snapshot(params, null).getPixelReader(), 0, 0);
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return full;
 	}
 }

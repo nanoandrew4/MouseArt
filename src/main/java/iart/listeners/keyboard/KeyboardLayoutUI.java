@@ -9,6 +9,9 @@ import javafx.scene.text.Text;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
 /**
  * UI portion of the keyboard layout setup process.
  */
@@ -29,10 +32,13 @@ public class KeyboardLayoutUI {
 		stage = new Stage();
 		stage.initModality(Modality.APPLICATION_MODAL);
 		stage.setOnCloseRequest((event) -> {
-			stage.close();
-			primaryStage.close();
-			Platform.exit();
-			System.exit(0);
+			if (!Files.exists(Paths.get(Main.keysFileLoc))) {
+				stage.close();
+				primaryStage.close();
+				Platform.exit();
+				System.exit(0);
+			} else
+				stage.close();
 		});
 		Pane pane = new Pane();
 		Scene scene = new Scene(pane, 600, 400);
