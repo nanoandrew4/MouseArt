@@ -9,4 +9,8 @@ public class GrayscaleWheelScheme extends WheelScheme {
 		grayscale = true;
 		inverted = false;
 	}
+
+	@Override
+	public void registerSuperScheme() {
+	}
 }

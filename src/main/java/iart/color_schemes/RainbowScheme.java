@@ -5,6 +5,7 @@ import iart.draw.DrawEvent;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  * Rainbow color scheme. Used when determining the color with which to draw various objects on screen.
@@ -20,6 +21,11 @@ public class RainbowScheme implements ColorScheme {
 		for (int g = 0; g < 256; g++) colors.add(Color.rgb(255, g, 0));
 		for (int b = 0; b < 256; b++) colors.add(Color.rgb(0, 255, b));
 		for (int r = 0; r < 256; r++) colors.add(Color.rgb(r, 0, 255));
+	}
+
+	@Override
+	public void registerSuperScheme() {
+		ColorScheme.superSchemes.put("Rainbow", new ArrayList<>(Collections.singleton("Rainbow")));
 	}
 
 	@Override

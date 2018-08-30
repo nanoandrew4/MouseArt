@@ -6,18 +6,28 @@ import iart.Main;
 import javafx.scene.paint.Color;
 
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  *
  */
-public abstract class WheelScheme implements ColorScheme {
-	public static String[] schemes = {"ColorWheel", "GrayscaleWheel", "InvColorWheel", "InvGrayscale"};
-
+public class WheelScheme implements ColorScheme {
 	private static Point centrePoint = new Point(Main.screenWidth / 2, Main.screenHeight / 2);
 	private static final double diagScreenSlope = Main.screenHeight / (double) Main.screenWidth;
 
 	boolean grayscale;
 	boolean inverted;
+
+	public WheelScheme() {
+	}
+
+	@Override
+	public void registerSuperScheme() {
+		String[] schemes = {"wheel_scheme.ColorWheel", "wheel_scheme.GrayscaleWheel", "wheel_scheme.InvColorWheel",
+							"wheel_scheme.InvGrayscaleWheel"};
+		ColorScheme.superSchemes.putIfAbsent("Wheel", new ArrayList<>(Arrays.asList(schemes)));
+	}
 
 	@Override
 	public Color getColor(DrawEvent drawEvent, Point eventLoc) {

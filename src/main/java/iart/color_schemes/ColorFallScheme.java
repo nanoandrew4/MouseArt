@@ -8,12 +8,20 @@ import org.jnativehook.mouse.NativeMouseWheelEvent;
 import org.jnativehook.mouse.NativeMouseWheelListener;
 
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 
 public class ColorFallScheme implements ColorScheme, NativeMouseWheelListener {
 	private int currHue = (int) (Math.random() * 255);
 
 	public ColorFallScheme() {
 		GlobalScreen.addNativeMouseWheelListener(this);
+	}
+
+	@Override
+	public void registerSuperScheme() {
+		ColorScheme.superSchemes.put("ColorFall", new ArrayList<>(Collections.singletonList("ColorFall")));
 	}
 
 	@Override

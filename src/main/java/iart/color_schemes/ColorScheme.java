@@ -4,6 +4,7 @@ import iart.draw.DrawEvent;
 import javafx.scene.paint.Color;
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -14,15 +15,17 @@ public interface ColorScheme {
 	 * Color schemes to be loaded for use. Must follow class name, minus the "Scheme" part of the class name, that gets
 	 * added in.
 	 */
-	String[] colorSchemesStr = {"Grayscale", "Rainbow", "ColorFall"};
+	String[] colorSchemesStr = {"Grayscale", "Rainbow", "ColorFall", "Wheel"};
 
-	String[] colorSchemeSupertypes = {"Wheel"};
+	HashMap<String, ArrayList<String>> superSchemes = new HashMap<>();
 
 	/**
 	 * Contains all ColorScheme implementations that were loaded by Main.loadColorSchemes(). Useful for swapping
 	 * between color schemes, and easily adding new ones.
 	 */
 	HashMap<String, ColorScheme> colorSchemes = new HashMap<>();
+
+	void registerSuperScheme();
 
 	/**
 	 * Returns a color depending on the shape being drawn and a position on the screen(s).
@@ -33,5 +36,8 @@ public interface ColorScheme {
 	 */
 	Color getColor(DrawEvent drawEvent, Point eventLoc);
 
+	/**
+	 *
+	 */
 	void unregisterColorScheme();
 }

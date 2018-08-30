@@ -12,12 +12,17 @@ import javafx.scene.image.ImageView;
 import javafx.scene.transform.Transform;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
+import org.clapper.util.classutil.*;
 import org.jnativehook.GlobalScreen;
 import org.jnativehook.NativeHookException;
 
+import java.io.File;
+import java.lang.reflect.InvocationTargetException;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -122,42 +127,71 @@ public class Main extends Application {
 		fileMenu.getItems().addAll(resetKeyboardLayout, new SeparatorMenuItem(), startRecording, pauseRecording,
 								   stopRecording);
 
-		// Setup color scheme menu
-		Menu colorSchemeMenu = new Menu("Color Scheme");
-		ToggleGroup tGroup = new ToggleGroup();
-
-		loadColorSchemes();
-
-		Set<String> colorSchemes = ColorScheme.colorSchemes.keySet();
-		for (String colorSchemeStr : colorSchemes) {
-			RadioMenuItem scheme = new RadioMenuItem(colorSchemeStr);
-			scheme.setToggleGroup(tGroup);
-			scheme.setOnAction(event -> Recorder.colorScheme = swapColorScheme(colorSchemeStr));
-			if (Recorder.colorScheme.getClass() == ColorScheme.colorSchemes.get(colorSchemeStr).getClass())
-				scheme.setSelected(true);
-			colorSchemeMenu.getItems().add(scheme);
-		}
-
 		resMultiplierSpinner.setEditable(true);
 
 		Menu resSpinnerMenu = new Menu("Resolution Multiplier", null, new CustomMenuItem(resMultiplierSpinner, false));
 
 		// Setup menu bar
-		menuBar.getMenus().addAll(fileMenu, colorSchemeMenu, resSpinnerMenu);
+		menuBar.getMenus().addAll(fileMenu, resSpinnerMenu);
+		setupColorSchemes();
 	}
 
-	/**
-	 * Loads the color schemes specified in the colorSchemesStr array. The strings must match actual class names,
-	 * otherwise the color scheme will not be loaded.
-	 */
-	private void loadColorSchemes() {
-		for (String s : ColorScheme.colorSchemesStr) {
+	private void setupColorSchemes() {
+		// Setup color scheme menu
+		Menu colorSchemeMenu = new Menu("Color Scheme");
+		ToggleGroup tGroup = new ToggleGroup();
+
+		ClassFinder finder = new ClassFinder();
+		try {
+			finder.add(new File(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI()));
+		} catch (URISyntaxException e) {
+			e.printStackTrace(); // TODO: REMOVE
+		}
+		ClassFilter filter = new AndClassFilter(new SubclassClassFilter(ColorScheme.class));
+
+		Collection<ClassInfo> colorSchemes = new ArrayList<>();
+		finder.findClasses(colorSchemes, filter);
+
+		for (ClassInfo classInfo : colorSchemes) {
 			try {
-				ColorScheme.colorSchemes.put(s, (ColorScheme) Class.forName("iart.color_schemes." + s + "Scheme")
-																   .getConstructor().newInstance());
+				((ColorScheme) (Class.forName(classInfo.getClassName()).getConstructor().newInstance()))
+						.registerSuperScheme();
 			} catch (Exception e) {
-				System.err.println("Color scheme: \"" + s + "\" could not be found.");
+				e.printStackTrace();
+				System.out.println(classInfo.getClassName());
 			}
+		}
+
+		for (String superScheme : ColorScheme.colorSchemesStr)
+			setupSuperScheme(colorSchemeMenu, tGroup, superScheme);
+
+		menuBar.getMenus().add(1, colorSchemeMenu);
+	}
+
+	private void setupSuperScheme(Menu parentMenu, ToggleGroup toggleGroup, String superScheme) {
+		ArrayList<String> subSchemes = ColorScheme.superSchemes.get(superScheme);
+
+		if (subSchemes == null || subSchemes.size() == 1) {
+			try {
+				ColorScheme.colorSchemes.put(
+						superScheme, (ColorScheme) Class.forName("iart.color_schemes." + superScheme + "Scheme")
+														.getConstructor().newInstance()
+				);
+				String[] schemeName = superScheme.split("\\.");
+				RadioMenuItem scheme = new RadioMenuItem(schemeName[schemeName.length - 1]);
+				scheme.setToggleGroup(toggleGroup);
+				scheme.setOnAction(event -> Recorder.colorScheme = swapColorScheme(superScheme));
+				if (Recorder.colorScheme.getClass() == ColorScheme.colorSchemes.get(superScheme).getClass())
+					scheme.setSelected(true);
+				parentMenu.getItems().add(scheme);
+			} catch (Exception e) {
+				System.err.println("Color scheme \"" + superScheme + "\" could not be found.");
+			}
+		} else {
+			Menu subMenu = new Menu(superScheme);
+			for (String subScheme : subSchemes)
+				setupSuperScheme(subMenu, toggleGroup, subScheme);
+			parentMenu.getItems().add(subMenu);
 		}
 	}
 

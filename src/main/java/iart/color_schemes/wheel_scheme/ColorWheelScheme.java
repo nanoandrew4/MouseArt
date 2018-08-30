@@ -5,7 +5,11 @@ package iart.color_schemes.wheel_scheme;
  * that the shape should be drawn with.
  */
 public class ColorWheelScheme extends WheelScheme {
-	ColorWheelScheme() {
+	public ColorWheelScheme() {
 		grayscale = inverted = false;
+	}
+
+	@Override
+	public void registerSuperScheme() {
 	}
 }
