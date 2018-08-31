@@ -13,7 +13,6 @@ import java.util.Collections;
 public class GrayscaleScheme implements ColorScheme {
 	@Override
 	public void registerSuperScheme() {
-		ColorScheme.superSchemes.put("Grayscale", new ArrayList<>(Collections.singleton("Grayscale")));
 	}
 
 	@Override
@@ -36,6 +35,10 @@ public class GrayscaleScheme implements ColorScheme {
 	}
 
 	@Override
-	public void unregisterColorScheme() {
+	public void startColorScheme() {
+	}
+
+	@Override
+	public void stopColorScheme() {
 	}
 }

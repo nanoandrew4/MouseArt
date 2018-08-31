@@ -1,6 +1,5 @@
 package iart;
 
-import iart.color_schemes.ColorScheme;
 import iart.listeners.keyboard.KeyboardLayoutUI;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -13,16 +12,11 @@ import javafx.scene.image.WritableImage;
 import javafx.scene.transform.Transform;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
-import org.clapper.util.classutil.*;
 import org.jnativehook.GlobalScreen;
 import org.jnativehook.NativeHookException;
 
-import java.io.File;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -70,25 +64,14 @@ public class Main extends Application {
 
 		// Get screen sizes, supports multiple monitors
 		screenWidth = (int) (Screen.getScreens().get(Screen.getScreens().size() - 1).getBounds().getMaxX());
-		screenHeight = (int) (Screen.getScreens().get(Screen.getScreens().size() - 1).getBounds().getMaxY());
+		screenHeight = (int) (Screen.getScreens().get(0Screen.getScreens().size() - 1).getBounds().getMaxY());
 
 		sceneWidth = (int) (screenWidth * .25d);
 		sceneHeight = (int) (screenHeight * .25d);
 
 		previewScene = new Scene(previewGroup = new Group(), sceneWidth, sceneHeight);
 
-		menuBar.prefWidthProperty().bind(primaryStage.widthProperty());
-		menuBar.setOnMouseEntered(event -> {
-			if (Recorder.state == State.RECORDING)
-				menuBar.setOpacity(1);
-		});
-		menuBar.setOnMouseExited(event -> {
-			if (Recorder.state == State.RECORDING)
-				menuBar.setOpacity(.2);
-		});
-
 		setupMenuBar(primaryStage);
-		previewGroup.getChildren().addAll(menuBar);
 
 		setStageListeners(primaryStage);
 		primaryStage.setScene(previewScene);
@@ -106,10 +89,21 @@ public class Main extends Application {
 	 * @param primaryStage Main stage, so that if the recording is stopped, a snapshot can be taken and stored
 	 */
 	private void setupMenuBar(Stage primaryStage) {
+		menuBar.prefWidthProperty().bind(primaryStage.widthProperty());
+		menuBar.setOnMouseEntered(event -> {
+			if (Recorder.state == State.RECORDING)
+				menuBar.setOpacity(1);
+		});
+		menuBar.setOnMouseExited(event -> {
+			if (Recorder.state == State.RECORDING)
+				menuBar.setOpacity(.2);
+		});
+
 		Menu fileMenu = new Menu("File");
 
 		MenuItem resetKeyboardLayout = new MenuItem("Reset keyboard layout");
 		resetKeyboardLayout.setOnAction(event -> new KeyboardLayoutUI(primaryStage));
+
 		startRecording.setOnAction(event -> {
 			if (recorder.startRecording(this, Math.sqrt(resMultiplierSpinner.getValue()))) {
 				menuBar.setOpacity(0.5);
@@ -118,7 +112,9 @@ public class Main extends Application {
 				refreshPreview();
 			}
 		});
+
 		pauseRecording.setOnAction(event -> recorder.pauseRecording(pauseRecording));
+
 		stopRecording.setOnAction(event -> {
 			if (recorder.stopRecording(primaryStage))
 				menuBar.setOpacity(1);
@@ -133,78 +129,9 @@ public class Main extends Application {
 
 		// Setup menu bar
 		menuBar.getMenus().addAll(fileMenu, resSpinnerMenu);
-		setupColorSchemes();
-	}
+		ColorSchemeSetup.setupColorSchemes(menuBar);
 
-	private void setupColorSchemes() {
-		// Setup color scheme menu
-		Menu colorSchemeMenu = new Menu("Color Scheme");
-		ToggleGroup tGroup = new ToggleGroup();
-
-		ClassFinder finder = new ClassFinder();
-		try {
-			finder.add(new File(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI()));
-		} catch (URISyntaxException e) {
-			e.printStackTrace();
-		}
-		ClassFilter filter = new AndClassFilter(new SubclassClassFilter(ColorScheme.class));
-
-		Collection<ClassInfo> colorSchemes = new ArrayList<>();
-		finder.findClasses(colorSchemes, filter);
-
-		for (ClassInfo classInfo : colorSchemes) {
-			try {
-				((ColorScheme) (Class.forName(classInfo.getClassName()).getConstructor().newInstance()))
-						.registerSuperScheme();
-			} catch (Exception e) {
-				e.printStackTrace();
-				System.out.println(classInfo.getClassName());
-			}
-		}
-
-		for (String superScheme : ColorScheme.colorSchemesStr)
-			setupSuperScheme(colorSchemeMenu, tGroup, superScheme);
-
-		menuBar.getMenus().add(1, colorSchemeMenu);
-	}
-
-	private void setupSuperScheme(Menu parentMenu, ToggleGroup toggleGroup, String superScheme) {
-		ArrayList<String> subSchemes = ColorScheme.superSchemes.get(superScheme);
-
-		if (subSchemes == null || subSchemes.size() == 1) {
-			try {
-				ColorScheme.colorSchemes.put(
-						superScheme, (ColorScheme) Class.forName("iart.color_schemes." + superScheme + "Scheme")
-														.getConstructor().newInstance()
-				);
-
-				String[] schemeDisplayName = superScheme.split("\\.");
-				RadioMenuItem scheme = new RadioMenuItem(schemeDisplayName[schemeDisplayName.length - 1]);
-				scheme.setToggleGroup(toggleGroup);
-				scheme.setOnAction(event -> Recorder.colorScheme = swapColorScheme(superScheme));
-				if (Recorder.colorScheme.getClass() == ColorScheme.colorSchemes.get(superScheme).getClass())
-					scheme.setSelected(true);
-				parentMenu.getItems().add(scheme);
-			} catch (Exception e) {
-				System.err.println("Color scheme \"" + superScheme + "\" could not be found.");
-			}
-		} else {
-			Menu subMenu = new Menu(superScheme);
-			for (String subScheme : subSchemes)
-				setupSuperScheme(subMenu, toggleGroup, subScheme);
-			parentMenu.getItems().add(subMenu);
-		}
-	}
-
-	/**
-	 * Allows the active color scheme to do some cleanup if necessary before being swapped.
-	 *
-	 * @param colorSchemeStr Name of the color scheme that is to replace the active one
-	 * @return ColorScheme corresponding to the name passed as an argument
-	 */
-	private ColorScheme swapColorScheme(String colorSchemeStr) {
-		Recorder.colorScheme.unregisterColorScheme();
-		return ColorScheme.colorSchemes.get(colorSchemeStr);
+		previewGroup.getChildren().addAll(menuBar);
 	}
 
 	/**
@@ -217,13 +144,13 @@ public class Main extends Application {
 		try {
 			geomPreview.setImage(recorder.getCanvas().snapshot(snapshotParameters, null));
 		} catch (Exception e) {
-			WritableImage img = Recorder.exportCanvasToImg(recorder.getCanvas());
+			WritableImage img = Recorder.tiledNodeSnapshot(recorder.getCanvas());
 			geomPreview.setImage(img);
 		}
 	}
 
 	/**
-	 * Sets window resize listeners, and closing listeners.
+	 * Sets main window resize listeners, and closing listeners.
 	 *
 	 * @param stage Stage to set listeners for (primaryStage)
 	 */

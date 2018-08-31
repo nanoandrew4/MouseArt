@@ -25,7 +25,6 @@ public class RainbowScheme implements ColorScheme {
 
 	@Override
 	public void registerSuperScheme() {
-		ColorScheme.superSchemes.put("Rainbow", new ArrayList<>(Collections.singleton("Rainbow")));
 	}
 
 	@Override
@@ -50,6 +49,10 @@ public class RainbowScheme implements ColorScheme {
 	}
 
 	@Override
-	public void unregisterColorScheme() {
+	public void startColorScheme() {
+	}
+
+	@Override
+	public void stopColorScheme() {
 	}
 }

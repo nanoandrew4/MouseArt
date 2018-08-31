@@ -24,7 +24,8 @@ import java.io.File;
 import java.io.IOException;
 
 /**
- *
+ * This class controls the recording process which results in an image being drawn, through the tracking of
+ * keystrokes and mouse actions.
  */
 public class Recorder {
 	private MouseHook mouseHook;
@@ -120,7 +121,7 @@ public class Recorder {
 		File file = fileChooser.showSaveDialog(stage);
 
 		if (file != null) {
-			WritableImage img = exportCanvasToImg(canvas);
+			WritableImage img = tiledNodeSnapshot(canvas);
 			try {
 				ImageIO.write(SwingFXUtils.fromFXImage(img, null), "png",
 							  file);
@@ -133,34 +134,58 @@ public class Recorder {
 	}
 
 	/**
-	 * https://stackoverflow.com/a/51766048
-	 * @param node
+	 * Takes a snapshot of a Node instance by tiling the image, taking a snapshot of each tile, and stitching the
+	 * tiles together to form the full snapshot of the Node. This is done to prevent a crash which is caused by taking
+	 * a snapshot of large images.
+	 *
+	 * @param node Node to take a snapshot of
 	 */
-	static WritableImage exportCanvasToImg(final Node node) {
-		final int w = (int) node.getLayoutBounds().getWidth();
-		final int h = (int) node.getLayoutBounds().getHeight();
-		final WritableImage full = new WritableImage(w, h);
+	static WritableImage tiledNodeSnapshot(final Node node) {
+		int width = (int) node.getLayoutBounds().getWidth();
+		int height = (int) node.getLayoutBounds().getHeight();
+		WritableImage image = new WritableImage(width, height);
 
-		// defines the number of tiles to export (use higher value for bigger resolution)
-		final int size = Math.max(w / 1920, Math.max(h / 1080, 1));
-		final int tileWidth = w / size;
-		final int tileHeight = h / size;
+		/*
+		 * 1,000,000 (1,000 x 1,000) pixels per snapshot is a reasonable number to expect JavaFX to be able to handle,
+		 * it is an arbitrary value that is known to work.
+		 */
+		int horTiles = getNumOfTiles(width, 1000);
+		int vertTiles = getNumOfTiles(height, 1000);
+
+		int tileWidth = width / horTiles;
+		int tileHeight = height / vertTiles;
 
 		try {
-			for (int col = 0; col < size; ++col) {
-				for (int row = 0; row < size; ++row) {
-					final int x = row * tileWidth;
-					final int y = col * tileHeight;
-					final SnapshotParameters params = new SnapshotParameters();
+			for (int col = 0; col < vertTiles; col++) {
+				for (int row = 0; row < horTiles; row++) {
+					int x = row * tileWidth;
+					int y = col * tileHeight;
+					SnapshotParameters params = new SnapshotParameters();
 					params.setViewport(new Rectangle2D(x, y, tileWidth, tileHeight));
 
-					full.getPixelWriter().setPixels(x, y, tileWidth, tileHeight, node.snapshot(params, null).getPixelReader(), 0, 0);
+					image.getPixelWriter().setPixels(x, y, tileWidth, tileHeight,
+													 node.snapshot(params, null).getPixelReader(), 0, 0);
 				}
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			System.err.println("Error tiling and stitching the image.");
 		}
 
-		return full;
+		return image;
+	}
+
+	/**
+	 * Given a size and a maximum number of pixels to be used on one of the sides of a tile, when breaking down a
+	 * larger image, this method returns the number of tiles that are required to evenly split the pixels of the
+	 * larger image amongst the tiles, as well as have less pixels on one side of the tile than the specified maximum.
+	 *
+	 * @param size         Size of one of the sides of the tile (width or height)
+	 * @param maxPxPerTile Maximum length one of the sides of the tile can have (max width or height of each tile)
+	 * @return Number of tiles to be used that accommodates the requirements
+	 */
+	private static int getNumOfTiles(int size, int maxPxPerTile) {
+		int tiles = 1;
+		for (; size / tiles > maxPxPerTile || size % tiles != 0; tiles++) ;
+		return tiles;
 	}
 }

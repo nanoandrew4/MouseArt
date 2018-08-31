@@ -13,10 +13,14 @@ import java.util.HashMap;
 public interface ColorScheme {
 	/**
 	 * Color schemes to be loaded for use. Must follow class name, minus the "Scheme" part of the class name, that gets
-	 * added in.
+	 * added in. Only add lone schemes and top level super schemes, lower level super schemes will be added in
+	 * automatically.
 	 */
-	String[] colorSchemesStr = {"Grayscale", "Rainbow", "ColorFall", "Wheel"};
+	String[] topLevelSchemes = {"Grayscale", "Rainbow", "ColorFall", "Wheel"};
 
+	/**
+	 * Contains all super schemes, which are classes that inherit ColorScheme, and have any number of subclasses.
+	 */
 	HashMap<String, ArrayList<String>> superSchemes = new HashMap<>();
 
 	/**
@@ -25,6 +29,11 @@ public interface ColorScheme {
 	 */
 	HashMap<String, ColorScheme> colorSchemes = new HashMap<>();
 
+	/**
+	 * Registers a super scheme in the superSchemes hashmap. A super scheme is a class that implements (or inherits)
+	 * ColorScheme, and that has any number of subclasses. This allows them to be put in a submenu in the UI, and
+	 * keep all the schemes tidy.
+	 */
 	void registerSuperScheme();
 
 	/**
@@ -37,7 +46,13 @@ public interface ColorScheme {
 	Color getColor(DrawEvent drawEvent, Point eventLoc);
 
 	/**
-	 *
+	 * Allows a color scheme to set itself up before it starts being used, if necessary.
 	 */
-	void unregisterColorScheme();
+	void startColorScheme();
+
+	/**
+	 * Allows the active color scheme to shut down and clean up, if necessary, before it is swapped for another color
+	 * scheme.
+	 */
+	void stopColorScheme();
 }
