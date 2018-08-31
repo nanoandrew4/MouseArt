@@ -9,7 +9,18 @@ This program is modelled after IO Graph, which I saw on the internet and thought
 
 ## Usage
 
+Run as you would any other java program, either by double clicking it, or by running "java -jar iArt-vX.Y-release.jar" on a command line, in the directory the jar file is located at. When the program is run for the first time, it requests the user to enter their keyboard layout, from top left key, to bottom right. You choose what key will be the top left of the layout, and which the bottom right. Please note that when entering the layout, the keys pressed will be processed by the OS, so don't be surprised if you hit the power key and the system shuts down. Try avoiding those types of keys.
+
 ## Sample images
+
+### ColorWheel scheme
+![alt text](https://raw.githubusercontent.com/nanoandrew4/iArt/master/sample_art/colorwheel.png "ColorWheel scheme demo")
+
+### GrayscaleWheel scheme
+![alt text](https://raw.githubusercontent.com/nanoandrew4/iArt/master/sample_art/grayscalewheel.png "GrayscaleWheel scheme demo")
+
+### Rainbow scheme
+![alt text](https://raw.githubusercontent.com/nanoandrew4/iArt/master/sample_art/rainbow.png "Rainbow scheme demo")
 
 ## Please note
 Although none of the input during the recording session is stored, when the program is launched for the first time, a window will request the user enters their keyboard layout, since there is no way for the program to know otherwise. Once the layout is fully entered, it is saved to the disk, at the users home directory, with the name ".iart_keys". This file is used on subsequent program runs to load the keyboard layout, so the program knows where to draw each of the keystrokes on the virtual canvas. This file is not sent anywhere, it resides solely on disk.
