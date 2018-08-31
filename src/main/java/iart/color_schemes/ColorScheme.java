@@ -16,7 +16,7 @@ public interface ColorScheme {
 	 * added in. Only add lone schemes and top level super schemes, lower level super schemes will be added in
 	 * automatically.
 	 */
-	String[] topLevelSchemes = {"Grayscale", "Rainbow", "ColorFall", "Wheel"};
+	String[] topLevelSchemes = {"Grayscale", "Rainbow", "Fall", "Wheel"};
 
 	/**
 	 * Contains all super schemes, which are classes that inherit ColorScheme, and have any number of subclasses.

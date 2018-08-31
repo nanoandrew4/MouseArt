@@ -64,7 +64,7 @@ public class Main extends Application {
 
 		// Get screen sizes, supports multiple monitors
 		screenWidth = (int) (Screen.getScreens().get(Screen.getScreens().size() - 1).getBounds().getMaxX());
-		screenHeight = (int) (Screen.getScreens().get(0Screen.getScreens().size() - 1).getBounds().getMaxY());
+		screenHeight = (int) (Screen.getScreens().get(Screen.getScreens().size() - 1).getBounds().getMaxY());
 
 		sceneWidth = (int) (screenWidth * .25d);
 		sceneHeight = (int) (screenHeight * .25d);
