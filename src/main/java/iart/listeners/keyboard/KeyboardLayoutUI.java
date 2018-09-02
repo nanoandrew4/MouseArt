@@ -53,9 +53,9 @@ public class KeyboardLayoutUI {
 							 "right. You choose where to start and finish, just note that if you press keys such as " +
 							 "volume or power keys, the OS will catch them too. The file holding your layout will " +
 							 "be stored under: " + Main.keysFileLoc + "\n" +
-							 "Start pressing keys! When you are done one row, press the first key you pressed twice." +
+							 "Start pressing keys! When you are done one row, press the first key you pressed, twice." +
 							 " " +
-							 "When you have finished entering your layout, press the second key you pressed twice."
+							 "When you have finished entering your layout, press the second key you pressed, twice."
 		);
 		info.setFont(font);
 

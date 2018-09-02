@@ -13,10 +13,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
- *
+ * This class and its subclasses implement a color scheme that creates the following effect. The topmost or leftmost
+ * (depending on orientation) part of the screen has the highest saturation level, meaning the color is most intense.
+ * The opposite side has the lowest saturation level, and there is a gradient between both. For the grayscale
+ * implementations, the topmost or leftmost part of the screen is black, and the opposite is white, with a gradient
+ * between them too. The mouse wheel changes the hue of the color being drawn, which means grayscale implementations
+ * do not need the mouse wheel listener.
  */
-public class ColorFallScheme implements ColorScheme, NativeMouseWheelListener {
-	private int currHue;
+public class FallScheme implements ColorScheme, NativeMouseWheelListener {
+	private int currHue = (int) (Math.random() * 255);
 
 	boolean vertical;
 	boolean grayscale;
@@ -30,28 +35,29 @@ public class ColorFallScheme implements ColorScheme, NativeMouseWheelListener {
 
 	@Override
 	public Color getColor(DrawEvent drawEvent, Point eventLoc) {
-		double ratio = 0d;
+		double locToEdegeRatio = 0d;
 		if (eventLoc != null)
-			ratio = vertical ? (double) eventLoc.y / Main.screenHeight : (double) eventLoc.x / Main.screenWidth;
+			locToEdegeRatio = vertical ? (double) eventLoc.y / Main.screenHeight
+									   : (double) eventLoc.x / Main.screenWidth;
 		switch (drawEvent) {
 			case MOUSE_MOVE:
 				return Color.hsb(grayscale ? 0d : currHue,
-								 grayscale ? 0d : 1d - ratio,
-								 grayscale ? ratio : 1d,
+								 grayscale ? 0d : 1d - locToEdegeRatio,
+								 grayscale ? locToEdegeRatio : 1d,
 								 1
-				);
+								);
 			case KEYSTROKE:
 				return Color.hsb(grayscale ? 0d : currHue,
-								 grayscale ? 0d : Math.min(1d - ratio + (Math.random() / 10d), 1d),
-								 grayscale ? Math.min(ratio + (Math.random() / 10d), 1d) : 1d,
+								 grayscale ? 0d : Math.min(1d - locToEdegeRatio + (Math.random() / 10d), 1d),
+								 grayscale ? Math.min(locToEdegeRatio + (Math.random() / 10d), 1d) : 1d,
 								 Math.random()
-				);
+								);
 			case LMOUSE_PRESS:
 				return Color.hsb(grayscale ? 0d : currHue,
-								 grayscale ? 0d : Math.max(1d - ratio - (Math.random() / 10d), 0d),
-								 grayscale ? Math.max(ratio - (Math.random() / 10d), 0d) : 1d,
+								 grayscale ? 0d : Math.max(1d - locToEdegeRatio - (Math.random() / 10d), 0d),
+								 grayscale ? Math.max(locToEdegeRatio - (Math.random() / 10d), 0d) : 1d,
 								 Math.random()
-				);
+								);
 			case MOVE_OUTER_CIRCLE:
 				return grayscale ? Color.BLACK : Color.WHITE;
 			case MOVE_INNER_CIRCLE:
@@ -65,7 +71,6 @@ public class ColorFallScheme implements ColorScheme, NativeMouseWheelListener {
 	@Override
 	public void startColorScheme() {
 		GlobalScreen.addNativeMouseWheelListener(this);
-		currHue = (int) (Math.random() * 255);
 	}
 
 	@Override
