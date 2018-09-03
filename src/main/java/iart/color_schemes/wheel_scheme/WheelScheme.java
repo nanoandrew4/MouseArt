@@ -12,7 +12,8 @@ import java.util.Arrays;
 /**
  * This classes subclasses take advantage of the HSB color model to create a wheel of color. In essence, the
  * effect created is as if there was a wheel of color (such as the ones you find in color pickers) behind a layer of
- * black, and the mouse was scratching the black off to reveal the color behind it.
+ * black, and the mouse was scratching the black off to reveal the color behind it, or the grayscale in case a
+ * grayscale subscheme was used.
  */
 public class WheelScheme implements ColorScheme {
 	boolean grayscale;
@@ -32,7 +33,6 @@ public class WheelScheme implements ColorScheme {
 			case KEYSTROKE:
 			case LMOUSE_PRESS:
 				Point centrePoint = new Point(Main.screenWidth / 2, Main.screenHeight / 2);
-				double diagScreenSlope = Main.screenHeight / (double) Main.screenWidth;
 
 				double angleRad = Math.atan((double) (centrePoint.y - eventLoc.y) / (eventLoc.x - centrePoint.x));
 				double angleDeg = Math.toDegrees(angleRad);
@@ -43,7 +43,7 @@ public class WheelScheme implements ColorScheme {
 
 				double distFromCentre = Math.sqrt((eventLoc.y - centrePoint.y) * (eventLoc.y - centrePoint.y) +
 												  (eventLoc.x - centrePoint.x) * (eventLoc.x - centrePoint.x));
-				double distToBorder = distToBorder(eventLoc.x, eventLoc.y, centrePoint, diagScreenSlope);
+				double distToBorder = distToBorder(eventLoc.x, eventLoc.y, centrePoint);
 				// Min/Max removes rounding errors, if there are any
 				double distToBorderRatio = Math.min(Math.max(distFromCentre / distToBorder, 0d), 1d);
 
@@ -69,7 +69,7 @@ public class WheelScheme implements ColorScheme {
 	 * @param distToBorderRatio Ratio between the distance from the centre of the screen to the mouse pointer, and
 	 *                          from the centre of the screen to the border of the screen, with both distances
 	 *                          being at the same angle passed as a parameter to this method.
-	 * @param distFromCentre Distance of the mouse cursor from the centre of the screen
+	 * @param distFromCentre    Distance of the mouse cursor from the centre of the screen
 	 * @return Color to use when drawing
 	 */
 	private Color getSchemeColor(DrawEvent drawEvent, double angle, double distToBorderRatio, double distFromCentre) {
@@ -78,7 +78,7 @@ public class WheelScheme implements ColorScheme {
 						 grayscale ? (inverted ? (1 - ((1 - distToBorderRatio) / 2)) : (1 - distToBorderRatio) / 2)
 								   : 1,
 						 drawEvent == DrawEvent.LMOUSE_PRESS ? getOpacity(distFromCentre) : 1
-		);
+						);
 	}
 
 	@Override
@@ -106,22 +106,23 @@ public class WheelScheme implements ColorScheme {
 	 *
 	 * @param px              Mouse x coordinate on screen
 	 * @param py              Mouse y coordinate on screen
-	 * @param centrePoint
-	 * @param diagScreenSlope
+	 * @param centrePoint     Coordinates of the centre of the screen(s)
 	 * @return Distance from the centre of the screen to the border
 	 */
-	private double distToBorder(double px, double py, Point centrePoint, double diagScreenSlope) {
+	private double distToBorder(double px, double py, Point centrePoint) {
 		double dy = py - centrePoint.y;
 		double dx = centrePoint.x - px;
 
 		double slope = dy / dx;
 		double borderX, borderY;
 
+		double diagScreenSlope = Main.screenHeight / (double) Main.screenWidth;
+
 		if (slope > diagScreenSlope || slope < -diagScreenSlope) {
-			borderX = ((Main.screenHeight / 2) * (py > 0 ? 1 : -1) - dy) / slope + dx;
+			borderX = ((Main.screenHeight / 2d) * (py > 0 ? 1 : -1) - dy) / slope + dx;
 			borderY = (borderX * dy) / dx;
 		} else {
-			borderY = slope * ((Main.screenWidth / 2) * (px > 0 ? 1 : -1) - dx) + dy;
+			borderY = slope * ((Main.screenWidth / 2d) * (px > 0 ? 1 : -1) - dx) + dy;
 			borderX = (borderY * dx) / dy;
 		}
 

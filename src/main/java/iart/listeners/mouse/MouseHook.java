@@ -30,7 +30,7 @@ public class MouseHook implements NativeMouseInputListener {
 	 * Sets up the mouse listener and registers it as a global listener. Once this constructor returns, the mouse
 	 * listener is fully operational, and will start processing mouse movement/click events immediately.
 	 *
-	 * @param drawer
+	 * @param drawer Drawer instance to draw the lines and mouse clicks with
 	 * @param screenWidth  Width of the screen(s) in pixels
 	 * @param screenHeight Height of the screen(s) in pixels
 	 */

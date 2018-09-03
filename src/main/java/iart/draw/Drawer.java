@@ -60,10 +60,10 @@ public class Drawer {
 
 		if (drawEvent == DrawEvent.MOVE_OUTER_CIRCLE) {
 			gc.setStroke(Recorder.colorScheme.getColor(drawEvent, point));
-			gc.strokeArc(centreX - radius / 2, centreY - radius / 2, radius, radius, 0, 360, ArcType.OPEN);
+			gc.strokeArc(centreX - radius / 2d, centreY - radius / 2d, radius, radius, 0, 360, ArcType.OPEN);
 		} else {
 			gc.setFill(Recorder.colorScheme.getColor(drawEvent, point));
-			gc.fillArc(centreX - radius / 2, centreY - radius / 2, radius, radius, 0, 360, ArcType.ROUND);
+			gc.fillArc(centreX - radius / 2d, centreY - radius / 2d, radius, radius, 0, 360, ArcType.ROUND);
 		}
 
 		main.refreshPreview();

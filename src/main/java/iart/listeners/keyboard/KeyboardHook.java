@@ -23,7 +23,7 @@ public class KeyboardHook implements NativeKeyListener {
 
 	private int screenWidth, screenHeight;
 
-	private int squareMaxWidth;
+	private int squareMaxWidth; // Max size that a square drawn by a keystroke can be
 
 	/**
 	 * Sets up the keyboard listener and registers it as a global listener. Once this constructor returns, the keyboard

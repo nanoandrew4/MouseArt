@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 /**
- * Gray scale color scheme. Used when determining the color with which to draw various objects on screen.
+ * Grayscale color scheme. Used when determining the color with which to draw various objects on screen.
  */
 public class GrayscaleScheme implements ColorScheme {
 	@Override

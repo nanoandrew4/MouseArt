@@ -23,8 +23,8 @@ import java.util.Arrays;
 public class FallScheme implements ColorScheme, NativeMouseWheelListener {
 	private int currHue = (int) (Math.random() * 255);
 
-	boolean vertical;
-	boolean grayscale;
+	boolean vertical; // Orientation of the color fall
+	boolean grayscale; // True if grayscale fall should be used, false if color fall should be used
 
 	@Override
 	public void registerSuperScheme() {

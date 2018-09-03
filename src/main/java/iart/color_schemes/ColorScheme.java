@@ -19,7 +19,9 @@ public interface ColorScheme {
 	String[] topLevelSchemes = {"Grayscale", "Rainbow", "Fall", "Wheel"};
 
 	/**
-	 * Contains all super schemes, which are classes that inherit ColorScheme, and have any number of subclasses.
+	 * Contains all super schemes, which are classes that inherit ColorScheme, and have any number of subschemes.
+	 * Any subschemes of the superschemes must include any packages it is in, below the color_schemes package.
+	 * Example: fall_scheme.HorColorFallScheme
 	 */
 	HashMap<String, ArrayList<String>> superSchemes = new HashMap<>();
 
@@ -32,7 +34,8 @@ public interface ColorScheme {
 	/**
 	 * Registers a super scheme in the superSchemes hashmap. A super scheme is a class that implements (or inherits)
 	 * ColorScheme, and that has any number of subclasses. This allows them to be put in a submenu in the UI, and
-	 * keep all the schemes tidy.
+	 * keep all the schemes tidy. Any subschemes of the superschemes must include any packages it is in, below the
+	 * color_schemes package. Example: fall_scheme.HorColorFallScheme, instead of simply HorColorFallScheme.
 	 */
 	void registerSuperScheme();
 
