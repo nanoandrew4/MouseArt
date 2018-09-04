@@ -1,9 +1,9 @@
 package iart.listeners.keyboard;
 
-import iart.Recorder;
+import iart.recorder.Recorder;
 import iart.draw.Drawer;
 import iart.Main;
-import iart.State;
+import iart.recorder.State;
 import javafx.application.Platform;
 import org.jnativehook.GlobalScreen;
 import org.jnativehook.keyboard.NativeKeyEvent;

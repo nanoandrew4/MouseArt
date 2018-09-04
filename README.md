@@ -2,7 +2,7 @@
 This program is modelled after IO Graph, which I saw on the internet and thought would be interesting to try and code, and implement my own ideas into it. The purpose of the program is to track the mouse pointer position and keystrokes to draw various geometric shapes on an invisible canvas, which is later saved to an image. Other shapes appear based on actions or inactions, such as circles.
 
 ## Features
-- Many color palettes to choose from, to make your images even more artsy!
+- Many color schemes to choose from, to make your images even more artsy!
 - Mouse and keyboard tracking, which allows the program to create your awesome art. This information is safe, it is not saved or sent anywhere. It is only used to trigger draw calls, and is subsequently discarded.
 - A resolution multiplier, which allows the program to draw bigger (and therefore more beautiful) images, so that zooming in does not cause as much pixelation.
 - Preview window which allows real time viewing of the art that is being drawn on the virtual canvas.

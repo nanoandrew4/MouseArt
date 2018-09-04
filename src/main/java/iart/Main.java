@@ -1,6 +1,9 @@
 package iart;
 
+import iart.color_schemes.ColorSchemeSetup;
 import iart.listeners.keyboard.KeyboardLayoutUI;
+import iart.recorder.Recorder;
+import iart.recorder.State;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Group;

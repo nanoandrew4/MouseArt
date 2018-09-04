@@ -1,7 +1,7 @@
 package iart.draw;
 
 import iart.Main;
-import iart.Recorder;
+import iart.recorder.Recorder;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.shape.ArcType;
 

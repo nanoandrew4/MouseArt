@@ -1,6 +1,7 @@
-package iart;
+package iart.color_schemes;
 
-import iart.color_schemes.ColorScheme;
+import iart.Main;
+import iart.recorder.Recorder;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.RadioMenuItem;
@@ -24,7 +25,7 @@ public class ColorSchemeSetup {
 	 *
 	 * @param menuBar MenuBar instance to add the Color Scheme menu to
 	 */
-	static void setupColorSchemes(MenuBar menuBar) {
+	public static void setupColorSchemes(MenuBar menuBar) {
 		// Setup color scheme menu
 		Menu colorSchemeMenu = new Menu("Color Scheme");
 		ToggleGroup tGroup = new ToggleGroup();
@@ -45,8 +46,7 @@ public class ColorSchemeSetup {
 				((ColorScheme) (Class.forName(classInfo.getClassName()).getConstructor().newInstance()))
 						.registerSuperScheme();
 			} catch (Exception e) {
-				e.printStackTrace();
-				System.out.println(classInfo.getClassName());
+				System.err.println("Error setting up: " + classInfo.getClassName());
 			}
 		}
 
@@ -58,8 +58,7 @@ public class ColorSchemeSetup {
 
 	/**
 	 * Sets up an individual color scheme. If the scheme is a superscheme, it will create a menu under which to add
-	 * its subschemes, and add them in recursively. Otherwise, it will add the current scheme to a menu.
-	 * // TODO: IMPROVE, especially since recursive
+	 * its subschemes, and add them in recursively. Otherwise, it will add the scheme to the given menu.
 	 *
 	 * @param parentMenu  Menu into which to add the scheme being passed as a parameter
 	 * @param toggleGroup Toggle group instance. Must be the same instance for all schemes
@@ -72,15 +71,23 @@ public class ColorSchemeSetup {
 
 		if (subSchemes == null || subSchemes.size() == 1) {
 			try {
-				ColorScheme.colorSchemes.put(
-						scheme, (ColorScheme) Class.forName("iart.color_schemes." + scheme + "Scheme")
-												   .getConstructor().newInstance()
-				);
+				if (subSchemes == null)
+					ColorScheme.colorSchemes.put(
+							scheme, (ColorScheme) Class.forName("iart.color_schemes." + scheme + "Scheme")
+													   .getConstructor().newInstance()
+					);
+				else // if (subSchemes.size() == 1)
+					ColorScheme.colorSchemes.putIfAbsent(
+							scheme, (ColorScheme) Class.forName("iart.color_schemes." + subSchemes.get(0) + "Scheme")
+													   .getConstructor().newInstance()
+					);
 
 				String[] schemeDisplayName = scheme.split("\\.");
 				RadioMenuItem schemeItem = new RadioMenuItem(schemeDisplayName[schemeDisplayName.length - 1]);
 				schemeItem.setToggleGroup(toggleGroup);
 				schemeItem.setOnAction(event -> Recorder.colorScheme = swapColorScheme(scheme));
+
+				// If scheme is the default scheme, set checkmark
 				if (Recorder.colorScheme.getClass() == ColorScheme.colorSchemes.get(scheme).getClass())
 					schemeItem.setSelected(true);
 				parentMenu.getItems().add(schemeItem);

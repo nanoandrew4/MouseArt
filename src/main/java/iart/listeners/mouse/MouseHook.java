@@ -1,9 +1,10 @@
 package iart.listeners.mouse;
 
-import iart.Recorder;
+import iart.recorder.Recorder;
 import iart.draw.DrawEvent;
 import iart.draw.Drawer;
 import iart.Main;
+import iart.recorder.State;
 import javafx.application.Platform;
 import org.jnativehook.GlobalScreen;
 import org.jnativehook.mouse.NativeMouseEvent;
@@ -72,7 +73,7 @@ public class MouseHook implements NativeMouseInputListener {
 		 * If the mouse was stopped for longer than three seconds, draw a circle with a radius proportional to the
 		 * cube root of the time elapsed until the mouse was moved again.
 		 */
-		if (Recorder.state == iart.State.RECORDING) {
+		if (Recorder.state == State.RECORDING) {
 			if (!prevLocation.equals(location)) {
 				if ((diff = System.currentTimeMillis() - lastMove) > 3000) {
 					double radius = getMouseMoveRadius(diff / 1000d);
@@ -114,7 +115,8 @@ public class MouseHook implements NativeMouseInputListener {
 
 	private void drawCircle(DrawEvent drawEvent, double centreX, double centreY, double radius) {
 		Platform.runLater(() -> drawer.drawCircle(
-				drawEvent, centreX * Recorder.resMultiplier, centreY * Recorder.resMultiplier, radius)
+				drawEvent, centreX * Recorder.resMultiplier, centreY * Recorder.resMultiplier,
+				radius * Recorder.resMultiplier)
 		);
 	}
 }

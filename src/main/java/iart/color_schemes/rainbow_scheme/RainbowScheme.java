@@ -1,10 +1,12 @@
-package iart.color_schemes;
+package iart.color_schemes.rainbow_scheme;
 
+import iart.color_schemes.ColorScheme;
 import iart.draw.DrawEvent;
 import javafx.scene.paint.Color;
 
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  * Rainbow color scheme. Used when determining the color with which to draw various objects on screen.
@@ -24,6 +26,8 @@ public class RainbowScheme implements ColorScheme {
 
 	@Override
 	public void registerSuperScheme() {
+		ColorScheme.superSchemes.putIfAbsent("Rainbow",
+											 new ArrayList<>(Collections.singleton("rainbow_scheme.Rainbow")));
 	}
 
 	@Override

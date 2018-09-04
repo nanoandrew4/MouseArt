@@ -1,7 +1,8 @@
-package iart;
+package iart.recorder;
 
+import iart.Main;
 import iart.color_schemes.ColorScheme;
-import iart.color_schemes.GrayscaleScheme;
+import iart.color_schemes.grayscale_scheme.GrayscaleScheme;
 import iart.draw.DrawEvent;
 import iart.draw.Drawer;
 import iart.listeners.keyboard.KeyboardHook;
@@ -37,14 +38,14 @@ public class Recorder {
 
 	private Canvas canvas;
 
-	Canvas getCanvas() {
+	public Canvas getCanvas() {
 		return canvas;
 	}
 
 	/**
 	 * Starts the mouse and keyboard tracking, and clears the canvas in order to draw on it.
 	 */
-	boolean startRecording(Main main, double resMultiplier) {
+	public boolean startRecording(Main main, double resMultiplier) {
 		if (state != State.STOPPED)
 			return false;
 		state = State.RECORDING;
@@ -73,7 +74,7 @@ public class Recorder {
 	/**
 	 * Pauses the drawing of the mouse movements and keystrokes. Mouse and keyboard tracking is still active.
 	 */
-	void pauseRecording(MenuItem pauseRecording) {
+	public void pauseRecording(MenuItem pauseRecording) {
 		if (state == State.RECORDING) {
 			state = State.PAUSED;
 			pauseRecording.setText("Resume");
@@ -88,7 +89,7 @@ public class Recorder {
 	 *
 	 * @param stage Stage which contains the canvas that was being drawn to, so that it can be saved as an image
 	 */
-	boolean stopRecording(Stage stage) {
+	public boolean stopRecording(Stage stage) {
 		if (state == State.STOPPED)
 			return false;
 		state = State.STOPPED;
@@ -140,7 +141,7 @@ public class Recorder {
 	 *
 	 * @param node Node to take a snapshot of
 	 */
-	static WritableImage tiledNodeSnapshot(final Node node) {
+	public static WritableImage tiledNodeSnapshot(final Node node) {
 		int width = (int) node.getLayoutBounds().getWidth();
 		int height = (int) node.getLayoutBounds().getHeight();
 		WritableImage image = new WritableImage(width, height);
