@@ -8,7 +8,7 @@ import org.jnativehook.GlobalScreen;
 import org.jnativehook.mouse.NativeMouseWheelEvent;
 import org.jnativehook.mouse.NativeMouseWheelListener;
 
-import java.awt.*;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -34,11 +34,10 @@ public class FallScheme implements ColorScheme, NativeMouseWheelListener {
 	}
 
 	@Override
-	public Color getColor(DrawEvent drawEvent, Point eventLoc) {
+	public Color getColor(DrawEvent drawEvent, Point2D eventLoc) {
 		double locToEdegeRatio = 0d;
 		if (eventLoc != null)
-			locToEdegeRatio = vertical ? (double) eventLoc.y / Main.screenHeight
-									   : (double) eventLoc.x / Main.screenWidth;
+			locToEdegeRatio = vertical ? eventLoc.getY() / Main.screenHeight : eventLoc.getX() / Main.screenWidth;
 		switch (drawEvent) {
 			case MOUSE_MOVE:
 				return Color.hsb(grayscale ? 0d : currHue,

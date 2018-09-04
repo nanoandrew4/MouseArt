@@ -30,7 +30,7 @@ public class MouseHook implements NativeMouseInputListener {
 	 * Sets up the mouse listener and registers it as a global listener. Once this constructor returns, the mouse
 	 * listener is fully operational, and will start processing mouse movement/click events immediately.
 	 *
-	 * @param drawer Drawer instance to draw the lines and mouse clicks with
+	 * @param drawer       Drawer instance to draw the lines and mouse clicks with
 	 * @param screenWidth  Width of the screen(s) in pixels
 	 * @param screenHeight Height of the screen(s) in pixels
 	 */
@@ -75,7 +75,7 @@ public class MouseHook implements NativeMouseInputListener {
 		if (Recorder.state == iart.State.RECORDING) {
 			if (!prevLocation.equals(location)) {
 				if ((diff = System.currentTimeMillis() - lastMove) > 3000) {
-					int radius = (int) Math.cbrt(diff);
+					double radius = getMouseMoveRadius(diff / 1000d);
 					drawCircle(DrawEvent.MOVE_OUTER_CIRCLE, location.x, location.y, radius);
 					drawCircle(DrawEvent.MOVE_INNER_CIRCLE, location.x, location.y, radius / 10);
 				}
@@ -86,20 +86,35 @@ public class MouseHook implements NativeMouseInputListener {
 		prevLocation = location;
 	}
 
+	/**
+	 * Returns a radius for the circle to be drawn when the mouse is moved, after being stopped for a bit. The formula
+	 * is a modified sigmoid function, chosen because I think it works well for this purpose. It caps at a quarter the
+	 * shortest screen dimension, so that the circles can not get infinitely big. Completely made up, the values were
+	 * toyed with until a good result was given.
+	 *
+	 * @param diffSecs Time between when the mouse stopped moving and when it started moving again
+	 * @return Radius to use when drawing the mouse move circle
+	 */
+	private static double getMouseMoveRadius(double diffSecs) {
+		return ((Main.screenWidth > Main.screenHeight ? Main.screenHeight : Main.screenHeight) / 4d) /
+			   (1d + 35d * Math.exp(-0.001d * diffSecs))
+			   - 15d;
+	}
+
 	@Override
 	public void nativeMouseDragged(NativeMouseEvent nativeMouseEvent) {
 	}
 
-	private void drawLine(int startX, int startY, int endX, int endY) {
+	private void drawLine(double startX, double startY, double endX, double endY) {
 		Platform.runLater(() -> drawer.drawLine(
-				(int) (startX * Recorder.resMultiplier), (int) (startY * Recorder.resMultiplier),
-				(int) (endX * Recorder.resMultiplier), (int) (endY * Recorder.resMultiplier)
+				startX * Recorder.resMultiplier, startY * Recorder.resMultiplier,
+				endX * Recorder.resMultiplier, endY * Recorder.resMultiplier
 		));
 	}
 
-	private void drawCircle(DrawEvent drawEvent, int centreX, int centreY, int radius) {
+	private void drawCircle(DrawEvent drawEvent, double centreX, double centreY, double radius) {
 		Platform.runLater(() -> drawer.drawCircle(
-				drawEvent, (int) (centreX * Recorder.resMultiplier), (int) (centreY * Recorder.resMultiplier), radius)
+				drawEvent, centreX * Recorder.resMultiplier, centreY * Recorder.resMultiplier, radius)
 		);
 	}
 }

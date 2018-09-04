@@ -5,7 +5,7 @@ import iart.Recorder;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.shape.ArcType;
 
-import java.awt.*;
+import java.awt.geom.Point2D;
 
 /**
  * Draws objects to the canvas as required by the listener classes. Once the drawing has been performed, the preview
@@ -15,7 +15,7 @@ public class Drawer {
 	private Main main;
 
 	private GraphicsContext gc;
-	private Point point = new Point();
+	private Point2D point = new Point2D.Double();
 
 	/**
 	 * Sets up the drawer to be able to draw on the specified canvas.
@@ -36,9 +36,8 @@ public class Drawer {
 	 * @param endX   Line end coordinate on the x axis
 	 * @param endY   Line end coordinate on the y axis
 	 */
-	public void drawLine(int startX, int startY, int endX, int endY) {
-		point.x = startX;
-		point.y = startY;
+	public void drawLine(double startX, double startY, double endX, double endY) {
+		point.setLocation(startX, startY);
 
 		gc.setStroke(Recorder.colorScheme.getColor(DrawEvent.MOUSE_MOVE, point));
 		gc.setLineWidth(1);
@@ -54,9 +53,8 @@ public class Drawer {
 	 * @param centreY   Circle center on the y axis
 	 * @param radius    Radius of the circle
 	 */
-	public void drawCircle(DrawEvent drawEvent, int centreX, int centreY, int radius) {
-		point.x = centreX;
-		point.y = centreY;
+	public void drawCircle(DrawEvent drawEvent, double centreX, double centreY, double radius) {
+		point.setLocation(centreX, centreY);
 
 		if (drawEvent == DrawEvent.MOVE_OUTER_CIRCLE) {
 			gc.setStroke(Recorder.colorScheme.getColor(drawEvent, point));
@@ -76,9 +74,8 @@ public class Drawer {
 	 * @param topLeftY Top left y coordinate on which to place the square
 	 * @param width    Width of the square (of one of the sides)
 	 */
-	public void drawSquare(int topLeftX, int topLeftY, int width) {
-		point.x = topLeftX;
-		point.y = topLeftY;
+	public void drawSquare(double topLeftX, double topLeftY, double width) {
+		point.setLocation(topLeftX, topLeftY);
 
 		gc.setStroke(Recorder.colorScheme.getColor(DrawEvent.KEYSTROKE, point));
 		gc.strokeRect(topLeftX, topLeftY, width, width);

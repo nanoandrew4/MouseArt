@@ -22,6 +22,9 @@ Run as you would any other java program, either by double clicking it, or by run
 ### Rainbow scheme
 ![alt text](https://raw.githubusercontent.com/nanoandrew4/iArt/master/sample_art/rainbow.png "Rainbow scheme demo")
 
+### VertColorFall scheme
+![alt text](https://raw.githubusercontent.com/nanoandrew4/iArt/master/sample_art/colorfall.png "VertColorFall scheme demo")
+
 ## Please note
 Although none of the input during the recording session is stored, when the program is launched for the first time, a window will request the user enters their keyboard layout, since there is no way for the program to know otherwise. Once the layout is fully entered, it is saved to the disk, at the users home directory, with the name ".iart_keys". This file is used on subsequent program runs to load the keyboard layout, so the program knows where to draw each of the keystrokes on the virtual canvas. This file is not sent anywhere, it resides solely on disk.
 

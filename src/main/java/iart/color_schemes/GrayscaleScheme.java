@@ -1,11 +1,9 @@
 package iart.color_schemes;
 
-import javafx.scene.paint.Color;
 import iart.draw.DrawEvent;
+import javafx.scene.paint.Color;
 
-import java.awt.*;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.awt.geom.Point2D;
 
 /**
  * Grayscale color scheme. Used when determining the color with which to draw various objects on screen.
@@ -16,7 +14,7 @@ public class GrayscaleScheme implements ColorScheme {
 	}
 
 	@Override
-	public Color getColor(DrawEvent drawEvent, Point eventLoc) {
+	public Color getColor(DrawEvent drawEvent, Point2D eventLoc) {
 		switch (drawEvent) {
 			case MOUSE_MOVE:
 				return Color.BLACK;

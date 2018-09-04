@@ -3,7 +3,7 @@ package iart.color_schemes;
 import iart.draw.DrawEvent;
 import javafx.scene.paint.Color;
 
-import java.awt.*;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -46,7 +46,7 @@ public interface ColorScheme {
 	 * @param eventLoc  Location of the mouse when the draw event was triggered
 	 * @return Color to use when drawing the shape specified by drawEvent
 	 */
-	Color getColor(DrawEvent drawEvent, Point eventLoc);
+	Color getColor(DrawEvent drawEvent, Point2D eventLoc);
 
 	/**
 	 * Allows a color scheme to set itself up before it starts being used, if necessary.

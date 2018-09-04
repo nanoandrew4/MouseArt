@@ -6,6 +6,7 @@ import iart.Main;
 import javafx.scene.paint.Color;
 
 import java.awt.*;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -27,23 +28,26 @@ public class WheelScheme implements ColorScheme {
 	}
 
 	@Override
-	public Color getColor(DrawEvent drawEvent, Point eventLoc) {
+	public Color getColor(DrawEvent drawEvent, Point2D eventLoc) {
 		switch (drawEvent) {
 			case MOUSE_MOVE:
 			case KEYSTROKE:
 			case LMOUSE_PRESS:
 				Point centrePoint = new Point(Main.screenWidth / 2, Main.screenHeight / 2);
 
-				double angleRad = Math.atan((double) (centrePoint.y - eventLoc.y) / (eventLoc.x - centrePoint.x));
+				double angleRad = Math.atan((centrePoint.getY() - eventLoc.getY()) / (eventLoc.getX() -
+																					  centrePoint.getX()));
 				double angleDeg = Math.toDegrees(angleRad);
-				if (eventLoc.x < centrePoint.x) // Convert to 0->360 range, since Math lib returns -90->90 range
+				if (eventLoc.getX() < centrePoint.getX()) // Convert to 0->360, since Math lib returns -90->90 range
 					angleDeg += 180;
-				else if (eventLoc.y > centrePoint.y) // Convert to 0->360 range
+				else if (eventLoc.getY() > centrePoint.getY()) // Convert to 0->360 range
 					angleDeg += 360;
 
-				double distFromCentre = Math.sqrt((eventLoc.y - centrePoint.y) * (eventLoc.y - centrePoint.y) +
-												  (eventLoc.x - centrePoint.x) * (eventLoc.x - centrePoint.x));
-				double distToBorder = distToBorder(eventLoc.x, eventLoc.y, centrePoint);
+				double distFromCentre = Math.sqrt(
+						(eventLoc.getY() - centrePoint.getY()) * (eventLoc.getY() - centrePoint.getY()) +
+						(eventLoc.getX() - centrePoint.getX()) * (eventLoc.getX() - centrePoint.getX())
+				);
+				double distToBorder = distToBorder(eventLoc.getX(), eventLoc.getY(), centrePoint);
 				// Min/Max removes rounding errors, if there are any
 				double distToBorderRatio = Math.min(Math.max(distFromCentre / distToBorder, 0d), 1d);
 
@@ -78,7 +82,7 @@ public class WheelScheme implements ColorScheme {
 						 grayscale ? (inverted ? (1 - ((1 - distToBorderRatio) / 2)) : (1 - distToBorderRatio) / 2)
 								   : 1,
 						 drawEvent == DrawEvent.LMOUSE_PRESS ? getOpacity(distFromCentre) : 1
-						);
+		);
 	}
 
 	@Override
@@ -104,14 +108,14 @@ public class WheelScheme implements ColorScheme {
 	 * Calculates the distance from the centre of the screen to the border of the screen, using the slope of the line
 	 * from the centre of the screen to the mouse position.
 	 *
-	 * @param px              Mouse x coordinate on screen
-	 * @param py              Mouse y coordinate on screen
-	 * @param centrePoint     Coordinates of the centre of the screen(s)
+	 * @param px          Mouse x coordinate on screen
+	 * @param py          Mouse y coordinate on screen
+	 * @param centrePoint Coordinates of the centre of the screen(s)
 	 * @return Distance from the centre of the screen to the border
 	 */
 	private double distToBorder(double px, double py, Point centrePoint) {
-		double dy = py - centrePoint.y;
-		double dx = centrePoint.x - px;
+		double dy = py - centrePoint.getY();
+		double dx = centrePoint.getX() - px;
 
 		double slope = dy / dx;
 		double borderX, borderY;

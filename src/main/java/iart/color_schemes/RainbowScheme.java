@@ -1,11 +1,10 @@
 package iart.color_schemes;
 
-import javafx.scene.paint.Color;
 import iart.draw.DrawEvent;
+import javafx.scene.paint.Color;
 
-import java.awt.*;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
-import java.util.Collections;
 
 /**
  * Rainbow color scheme. Used when determining the color with which to draw various objects on screen.
@@ -28,7 +27,7 @@ public class RainbowScheme implements ColorScheme {
 	}
 
 	@Override
-	public Color getColor(DrawEvent drawEvent, Point eventLoc) {
+	public Color getColor(DrawEvent drawEvent, Point2D eventLoc) {
 		switch (drawEvent) {
 			case MOUSE_MOVE:
 				return colors.get((int) (System.currentTimeMillis() - start) % colors.size());
