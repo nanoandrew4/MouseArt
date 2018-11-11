@@ -18,8 +18,10 @@ import javafx.stage.Stage;
 import org.jnativehook.GlobalScreen;
 import org.jnativehook.NativeHookException;
 
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -28,6 +30,11 @@ import java.util.logging.Logger;
  * hooks when recording starts, and if required, initializes the keyboard layout setup process.
  */
 public class Main extends Application {
+
+	private static String dirSeparator = System.getProperty("os.name").toLowerCase().contains("windows") ? "\\" : "/";
+	public static String iArtFolderPath = System.getProperty("home.dir") + dirSeparator + "Pictures" + dirSeparator +
+										  "iArt" + dirSeparator;
+
 	private Recorder recorder = new Recorder();
 
 	public static int screenWidth, screenHeight;
@@ -75,6 +82,12 @@ public class Main extends Application {
 		previewScene = new Scene(previewGroup = new Group(), sceneWidth, sceneHeight);
 
 		setupMenuBar(primaryStage);
+
+		primaryStage.setOnCloseRequest(event -> {
+			recorder.stopRecording(primaryStage);
+			Recorder.createIArtDirIfNotExists();
+			recorder.saveImage(new File(iArtFolderPath + new Date().toString()));
+		});
 
 		setStageListeners(primaryStage);
 		primaryStage.setScene(previewScene);

@@ -23,6 +23,8 @@ import org.jnativehook.GlobalScreen;
 import javax.imageio.ImageIO;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 /**
  * This class controls the recording process which results in an image being drawn, through the tracking of
@@ -45,7 +47,7 @@ public class Recorder {
 	/**
 	 * Starts the mouse and keyboard tracking, and clears the canvas in order to draw on it.
 	 */
-	public boolean startRecording(Main main, double resMultiplier) {
+	public boolean startRecording(final Main main, double resMultiplier) {
 		if (state != State.STOPPED)
 			return false;
 		state = State.RECORDING;
@@ -89,7 +91,7 @@ public class Recorder {
 	 *
 	 * @param stage Stage which contains the canvas that was being drawn to, so that it can be saved as an image
 	 */
-	public boolean stopRecording(Stage stage) {
+	public boolean stopRecording(final Stage stage) {
 		if (state == State.STOPPED)
 			return false;
 		state = State.STOPPED;
@@ -98,7 +100,7 @@ public class Recorder {
 		GlobalScreen.removeNativeMouseListener(mouseHook);
 		GlobalScreen.removeNativeKeyListener(keyboardHook);
 
-		saveImage(stage);
+		promptForFilename(stage);
 
 		return true;
 	}
@@ -109,7 +111,7 @@ public class Recorder {
 	 *
 	 * @param stage JavaFX stage, required for FileChooser
 	 */
-	private void saveImage(Stage stage) {
+	private void promptForFilename(final Stage stage) {
 		stage.setTitle("iArt - Saving to disk...");
 
 		FileChooser fileChooser = new FileChooser();
@@ -118,9 +120,34 @@ public class Recorder {
 		);
 		fileChooser.setInitialFileName("test.png");
 
+		createIArtDirIfNotExists();
+		fileChooser.setInitialDirectory(new File(Main.iArtFolderPath));
+
 		// Show system file chooser (choose file name and save destination)
 		File file = fileChooser.showSaveDialog(stage);
 
+		saveImage(file);
+
+		stage.setTitle("iArt");
+	}
+
+	/**
+	 * Creates the default directory for iArt images if it does not exist.
+	 */
+	public static void createIArtDirIfNotExists() {
+		try {
+			Files.createDirectory(Paths.get(Main.iArtFolderPath));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Saves the current canvas to the file passed as an argument.
+	 *
+	 * @param file File in which to save the image on the canvas
+	 */
+	public void saveImage(final File file) {
 		if (file != null) {
 			WritableImage img = tiledNodeSnapshot(canvas);
 			try {
@@ -130,8 +157,6 @@ public class Recorder {
 				System.err.println("Error writing image to disk");
 			}
 		}
-
-		stage.setTitle("iArt");
 	}
 
 	/**
