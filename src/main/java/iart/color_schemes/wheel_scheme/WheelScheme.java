@@ -20,6 +20,8 @@ public class WheelScheme implements ColorScheme {
 	boolean grayscale;
 	boolean inverted;
 
+	private long startTime;
+
 	@Override
 	public void registerSuperScheme() {
 		String[] schemes = {"wheel_scheme.ColorWheel", "wheel_scheme.GrayscaleWheel", "wheel_scheme.InvColorWheel",
@@ -77,16 +79,19 @@ public class WheelScheme implements ColorScheme {
 	 * @return Color to use when drawing
 	 */
 	private Color getSchemeColor(DrawEvent drawEvent, double angle, double distToBorderRatio, double distFromCentre) {
-		return Color.hsb(grayscale ? 0 : ((angle + (drawEvent == DrawEvent.MOUSE_MOVE ? 0 : 30)) % 360),
-						 grayscale ? 0 : (inverted ? 1 - distToBorderRatio : distToBorderRatio),
-						 grayscale ? (inverted ? (1 - ((1 - distToBorderRatio) / 2)) : (1 - distToBorderRatio) / 2)
-								   : 1,
-						 drawEvent == DrawEvent.LMOUSE_PRESS ? getOpacity(distFromCentre) : 1
+		return Color.hsb(
+				grayscale ? 0 : ((angle + ((System.currentTimeMillis() - startTime) / 60000)
+								  + (drawEvent == DrawEvent.MOUSE_MOVE ? 0 : 30)) % 360),
+				grayscale ? 0 : (inverted ? 1 - distToBorderRatio : distToBorderRatio),
+				grayscale ? (inverted ? (1 - ((1 - distToBorderRatio) / 2)) : (1 - distToBorderRatio) / 2)
+						  : 1,
+				drawEvent == DrawEvent.LMOUSE_PRESS ? getOpacity(distFromCentre) : 1
 		);
 	}
 
 	@Override
 	public void startColorScheme() {
+		startTime = System.currentTimeMillis();
 	}
 
 	@Override

@@ -24,7 +24,9 @@ import javax.imageio.ImageIO;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Date;
 
 /**
  * This class controls the recording process which results in an image being drawn, through the tracking of
@@ -118,7 +120,7 @@ public class Recorder {
 		fileChooser.getExtensionFilters().addAll(
 				new FileChooser.ExtensionFilter("PNG Files (*.png)", "*.png")
 		);
-		fileChooser.setInitialFileName("test.png");
+		fileChooser.setInitialFileName(new Date().toString() + ".png");
 
 		createIArtDirIfNotExists();
 		fileChooser.setInitialDirectory(new File(Main.iArtFolderPath));
@@ -136,9 +138,11 @@ public class Recorder {
 	 */
 	public static void createIArtDirIfNotExists() {
 		try {
-			Files.createDirectory(Paths.get(Main.iArtFolderPath));
+			Path path = Paths.get(Main.iArtFolderPath);
+			if (!Files.exists(path))
+				Files.createDirectory(path);
 		} catch (IOException e) {
-			e.printStackTrace();
+			System.err.println("Error creating iArt folder, aborting file save...");
 		}
 	}
 

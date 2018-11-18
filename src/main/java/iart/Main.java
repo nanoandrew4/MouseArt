@@ -32,7 +32,7 @@ import java.util.logging.Logger;
 public class Main extends Application {
 
 	private static String dirSeparator = System.getProperty("os.name").toLowerCase().contains("windows") ? "\\" : "/";
-	public static String iArtFolderPath = System.getProperty("home.dir") + dirSeparator + "Pictures" + dirSeparator +
+	public static String iArtFolderPath = System.getProperty("user.home") + dirSeparator + "Pictures" + dirSeparator +
 										  "iArt" + dirSeparator;
 
 	private Recorder recorder = new Recorder();
@@ -83,16 +83,18 @@ public class Main extends Application {
 
 		setupMenuBar(primaryStage);
 
-		primaryStage.setOnCloseRequest(event -> {
-			recorder.stopRecording(primaryStage);
-			Recorder.createIArtDirIfNotExists();
-			recorder.saveImage(new File(iArtFolderPath + new Date().toString()));
-		});
-
 		setStageListeners(primaryStage);
 		primaryStage.setScene(previewScene);
 		primaryStage.setTitle("iArt");
 		primaryStage.show();
+
+		primaryStage.setOnCloseRequest(event -> {
+			if (Recorder.state == State.RECORDING) {
+				Recorder.createIArtDirIfNotExists();
+				recorder.saveImage(new File(iArtFolderPath + new Date().toString()));
+			}
+			System.exit(0);
+		});
 
 		if (!Files.exists(Paths.get(keysFileLoc)))
 			new KeyboardLayoutUI(primaryStage);
