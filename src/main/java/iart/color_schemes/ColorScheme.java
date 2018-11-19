@@ -58,4 +58,8 @@ public interface ColorScheme {
 	 * scheme.
 	 */
 	void stopColorScheme();
+
+	default void correctDrawCoordinates(Point2D coords) {
+
+	}
 }

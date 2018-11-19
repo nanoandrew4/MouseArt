@@ -37,7 +37,7 @@ public class Main extends Application {
 
 	private Recorder recorder = new Recorder();
 
-	public static int screenWidth, screenHeight;
+	public static double screenWidth, screenHeight;
 	private double sceneWidth, sceneHeight;
 	private boolean windowFocused = false;
 
@@ -73,8 +73,12 @@ public class Main extends Application {
 		}
 
 		// Get screen sizes, supports multiple monitors
-		screenWidth = (int) (Screen.getScreens().get(Screen.getScreens().size() - 1).getBounds().getMaxX());
-		screenHeight = (int) (Screen.getScreens().get(Screen.getScreens().size() - 1).getBounds().getMaxY());
+		for (Screen s : Screen.getScreens()) {
+			if (s.getBounds().getMaxX() > screenWidth)
+				screenWidth = s.getBounds().getMaxX();
+			if (s.getBounds().getMaxY() > screenHeight)
+				screenHeight = s.getBounds().getMaxY();
+		}
 
 		sceneWidth = (int) (screenWidth * .25d);
 		sceneHeight = (int) (screenHeight * .25d);
