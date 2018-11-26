@@ -5,6 +5,7 @@ import iart.recorder.Recorder;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.shape.ArcType;
 
+import java.awt.Point;
 import java.awt.geom.Point2D;
 
 /**
@@ -28,20 +29,27 @@ public class Drawer {
 		this.gc = gc;
 	}
 
+	private void scaleDrawPoints(Point... ps) {
+		for (Point p : ps) {
+			p.x *= Recorder.resMultiplier;
+			p.y *= Recorder.resMultiplier;
+		}
+	}
+
 	/**
 	 * Draws a line on the canvas.
 	 *
-	 * @param startX Line start coordinate on the x axis
-	 * @param startY Line start coordinate on the y axis
-	 * @param endX   Line end coordinate on the x axis
-	 * @param endY   Line end coordinate on the y axis
+	 * @param start Line start coordinate
+	 * @param end   Line end coordinate
 	 */
-	public void drawLine(double startX, double startY, double endX, double endY) {
-		point.setLocation(startX, startY);
+	public void drawLine(Point start, Point end) {
+		scaleDrawPoints(start, end);
+
+		point.setLocation(start);
 
 		gc.setStroke(Recorder.colorScheme.getColor(DrawEvent.MOUSE_MOVE, point));
 		gc.setLineWidth(1);
-		gc.strokeLine(startX, startY, endX, endY);
+		gc.strokeLine(start.x, start.y, end.x, end.y);
 		main.refreshPreview();
 	}
 
@@ -49,19 +57,21 @@ public class Drawer {
 	 * Draws a circle on the canvas.
 	 *
 	 * @param drawEvent Determinant of color through use of color palette, depending on the figure being drawn
-	 * @param centreX   Circle center on the x axis
-	 * @param centreY   Circle center on the y axis
+	 * @param center    Coordinate on canvas which will be the circles centre
 	 * @param radius    Radius of the circle
 	 */
-	public void drawCircle(DrawEvent drawEvent, double centreX, double centreY, double radius) {
-		point.setLocation(centreX, centreY);
+	public void drawCircle(DrawEvent drawEvent, Point center, double radius) {
+		scaleDrawPoints(center);
+		radius *= Recorder.resMultiplier;
+
+		point.setLocation(center);
 
 		if (drawEvent == DrawEvent.MOVE_OUTER_CIRCLE) {
 			gc.setStroke(Recorder.colorScheme.getColor(drawEvent, point));
-			gc.strokeArc(centreX - radius / 2d, centreY - radius / 2d, radius, radius, 0, 360, ArcType.OPEN);
+			gc.strokeArc(center.x - radius / 2d, center.y - radius / 2d, radius, radius, 0, 360, ArcType.OPEN);
 		} else {
 			gc.setFill(Recorder.colorScheme.getColor(drawEvent, point));
-			gc.fillArc(centreX - radius / 2d, centreY - radius / 2d, radius, radius, 0, 360, ArcType.ROUND);
+			gc.fillArc(center.x - radius / 2d, center.y - radius / 2d, radius, radius, 0, 360, ArcType.ROUND);
 		}
 
 		main.refreshPreview();
@@ -70,15 +80,17 @@ public class Drawer {
 	/**
 	 * Draws a square on the canvas.
 	 *
-	 * @param topLeftX Top left x coordinate on which to place the square
-	 * @param topLeftY Top left y coordinate on which to place the square
-	 * @param width    Width of the square (of one of the sides)
+	 * @param topLeft Top left coordinate on canvas where the square should be drawn
+	 * @param width   Width of the square (of one of the sides)
 	 */
-	public void drawSquare(double topLeftX, double topLeftY, double width) {
-		point.setLocation(topLeftX, topLeftY);
+	public void drawSquare(Point topLeft, double width) {
+		scaleDrawPoints(topLeft);
+		width *= Recorder.resMultiplier;
+
+		point.setLocation(topLeft);
 
 		gc.setStroke(Recorder.colorScheme.getColor(DrawEvent.KEYSTROKE, point));
-		gc.strokeRect(topLeftX, topLeftY, width, width);
+		gc.strokeRect(topLeft.x, topLeft.y, width, width);
 		main.refreshPreview();
 	}
 }

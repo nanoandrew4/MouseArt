@@ -35,7 +35,7 @@ public class WheelScheme implements ColorScheme {
 			case MOUSE_MOVE:
 			case KEYSTROKE:
 			case LMOUSE_PRESS:
-				Point centrePoint = new Point(Main.screenWidth / 2, Main.screenHeight / 2);
+				Point centrePoint = new Point((int) Main.screenWidth / 2, (int) Main.screenHeight / 2);
 
 				double angleRad = Math.atan((centrePoint.getY() - eventLoc.getY()) / (eventLoc.getX() -
 																					  centrePoint.getX()));
