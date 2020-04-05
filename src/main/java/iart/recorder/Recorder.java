@@ -52,10 +52,9 @@ public class Recorder {
 
 		Recorder.resMultiplier = resMultiplier;
 
-		Main.screenWidth = (int) (Screen.getScreens().get(Screen.getScreens().size() - 1).getBounds().getMaxX() *
-								  resMultiplier);
-		Main.screenHeight = (int) (Screen.getScreens().get(Screen.getScreens().size() - 1).getBounds().getMaxY() *
-								   resMultiplier);
+		Main.resetScreenDimensions();
+		Main.screenWidth *= resMultiplier;
+		Main.screenHeight *= resMultiplier;
 
 		canvas = new Canvas(Main.screenWidth, Main.screenHeight);
 

@@ -27,6 +27,8 @@ public class MouseHook implements NativeMouseInputListener {
 
 	private int mPressCircleRad;
 
+	private int xOffset, yOffset;
+
 	/**
 	 * Sets up the mouse listener and registers it as a global listener. Once this constructor returns, the mouse
 	 * listener is fully operational, and will start processing mouse movement/click events immediately.
@@ -37,7 +39,7 @@ public class MouseHook implements NativeMouseInputListener {
 	 */
 	public MouseHook(Drawer drawer, int screenWidth, int screenHeight) {
 		this.drawer = drawer;
-		mPressCircleRad = (screenWidth > screenHeight ? screenWidth : screenHeight) / 50;
+		mPressCircleRad = (Math.max(screenWidth, screenHeight)) / 50;
 
 		prevLocation = MouseInfo.getPointerInfo().getLocation();
 		lastMove = System.currentTimeMillis();
@@ -68,6 +70,11 @@ public class MouseHook implements NativeMouseInputListener {
 		Point location = nativeMouseEvent.getPoint();
 		long diff;
 
+		if (location.getX() + xOffset < 0)
+			xOffset = (int) -location.getX();
+		if (location.getY() + yOffset < 0)
+			yOffset = (int) -location.getY();
+
 		/*
 		 * If the mouse has moved, draw a line between previous position and current position.
 		 * If the mouse was stopped for longer than three seconds, draw a circle with a radius proportional to the
@@ -77,11 +84,11 @@ public class MouseHook implements NativeMouseInputListener {
 			if (!prevLocation.equals(location)) {
 				if ((diff = System.currentTimeMillis() - lastMove) > 3000) {
 					double radius = getMouseMoveRadius(diff / 1000d);
-					drawCircle(DrawEvent.MOVE_OUTER_CIRCLE, location.x, location.y, radius);
-					drawCircle(DrawEvent.MOVE_INNER_CIRCLE, location.x, location.y, radius / 10);
+					drawCircle(DrawEvent.MOVE_OUTER_CIRCLE, location.x + xOffset, location.y + yOffset, radius);
+					drawCircle(DrawEvent.MOVE_INNER_CIRCLE, location.x + xOffset, location.y + yOffset, radius / 10);
 				}
 				lastMove = System.currentTimeMillis();
-				drawLine(prevLocation.x, prevLocation.y, location.x, location.y);
+				drawLine(prevLocation.x + xOffset, prevLocation.y + yOffset, location.x + xOffset, location.y + yOffset);
 			}
 		}
 		prevLocation = location;

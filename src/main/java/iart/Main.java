@@ -65,9 +65,7 @@ public class Main extends Application {
 			e.printStackTrace();
 		}
 
-		// Get screen sizes, supports multiple monitors
-		screenWidth = (int) (Screen.getScreens().get(Screen.getScreens().size() - 1).getBounds().getMaxX());
-		screenHeight = (int) (Screen.getScreens().get(Screen.getScreens().size() - 1).getBounds().getMaxY());
+		resetScreenDimensions();
 
 		sceneWidth = (int) (screenWidth * .25d);
 		sceneHeight = (int) (screenHeight * .25d);
@@ -83,6 +81,14 @@ public class Main extends Application {
 
 		if (!Files.exists(Paths.get(keysFileLoc)))
 			new KeyboardLayoutUI(primaryStage);
+	}
+
+	public static void resetScreenDimensions() {
+		// Get screen sizes, supports multiple monitors
+		for (int s = 0; s < Screen.getScreens().size(); s++) {
+			screenWidth = Math.max(screenWidth, (int) Screen.getScreens().get(s).getBounds().getMaxX());
+			screenHeight = Math.max(screenHeight, (int) Screen.getScreens().get(s).getBounds().getMaxY());
+		}
 	}
 
 	/**
