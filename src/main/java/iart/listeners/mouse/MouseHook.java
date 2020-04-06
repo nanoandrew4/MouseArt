@@ -1,11 +1,13 @@
 package iart.listeners.mouse;
 
-import iart.recorder.Recorder;
+import iart.Main;
 import iart.draw.DrawEvent;
 import iart.draw.Drawer;
-import iart.Main;
+import iart.recorder.Recorder;
 import iart.recorder.State;
 import javafx.application.Platform;
+import javafx.geometry.Rectangle2D;
+import javafx.stage.Screen;
 import org.jnativehook.GlobalScreen;
 import org.jnativehook.mouse.NativeMouseEvent;
 import org.jnativehook.mouse.NativeMouseInputListener;
@@ -46,6 +48,27 @@ public class MouseHook implements NativeMouseInputListener {
 
 		GlobalScreen.addNativeMouseListener(this);
 		GlobalScreen.addNativeMouseMotionListener(this);
+
+		calibrateMouseCapture();
+	}
+
+	/**
+	 * Move the mouse cursor to the top leftmost and bottom rightmost corners of each monitor. This way, the
+	 * {@link this#nativeMouseMoved(NativeMouseEvent)} method can calibrate itself (calculate the x/y offsets it needs
+	 * to apply, since the JNativeHook library miscalculates the x/y coords of the cursor on some multiple monitor setups).
+	 */
+	private void calibrateMouseCapture() {
+		try {
+			final Point originalMousePos = MouseInfo.getPointerInfo().getLocation();
+			for (Screen s : Screen.getScreens()) {
+				final Rectangle2D b = s.getBounds();
+				new Robot().mouseMove((int) b.getMinX(), (int) b.getMinY());
+				new Robot().mouseMove((int) b.getMaxX(), (int) b.getMaxY());
+			}
+			new Robot().mouseMove((int) originalMousePos.getX(), (int) originalMousePos.getY());
+		} catch (AWTException ignored) {
+			System.err.println("Error setting up the virtual canvas");
+		}
 	}
 
 	@Override
@@ -70,10 +93,7 @@ public class MouseHook implements NativeMouseInputListener {
 		Point location = nativeMouseEvent.getPoint();
 		long diff;
 
-		if (location.getX() + xOffset < 0)
-			xOffset = (int) -location.getX();
-		if (location.getY() + yOffset < 0)
-			yOffset = (int) -location.getY();
+		calculateOffsets(location);
 
 		/*
 		 * If the mouse has moved, draw a line between previous position and current position.
@@ -84,14 +104,29 @@ public class MouseHook implements NativeMouseInputListener {
 			if (!prevLocation.equals(location)) {
 				if ((diff = System.currentTimeMillis() - lastMove) > 3000) {
 					double radius = getMouseMoveRadius(diff / 1000d);
-					drawCircle(DrawEvent.MOVE_OUTER_CIRCLE, location.x + xOffset, location.y + yOffset, radius);
-					drawCircle(DrawEvent.MOVE_INNER_CIRCLE, location.x + xOffset, location.y + yOffset, radius / 10);
+					drawCircle(DrawEvent.MOVE_OUTER_CIRCLE, location.x, location.y, radius);
+					drawCircle(DrawEvent.MOVE_INNER_CIRCLE, location.x, location.y, radius / 10);
 				}
 				lastMove = System.currentTimeMillis();
-				drawLine(prevLocation.x + xOffset, prevLocation.y + yOffset, location.x + xOffset, location.y + yOffset);
+				drawLine(prevLocation.x, prevLocation.y, location.x, location.y);
 			}
 		}
 		prevLocation = location;
+	}
+
+	/**
+	 * Calculate the offsets, so that the location supplied by JNativeHook can be corrected, if necessary.
+	 * For example, a 3 monitor setup, with two monitors on top and one below and between them where the bottom
+	 * monitor is the primary monitor will cause a miscalculation by JNativeHook.
+	 *
+	 * @param currLocation Current location of the mouse cursor as reported by JNativeHook
+	 */
+	private void calculateOffsets(Point currLocation) {
+		if (currLocation.getX() + xOffset < 0)
+			xOffset = (int) -currLocation.getX();
+		if (currLocation.getY() + yOffset < 0)
+			yOffset = (int) -currLocation.getY();
+		currLocation.setLocation(currLocation.x + xOffset, currLocation.y + yOffset);
 	}
 
 	/**
@@ -117,13 +152,13 @@ public class MouseHook implements NativeMouseInputListener {
 		Platform.runLater(() -> drawer.drawLine(
 				startX * Recorder.resMultiplier, startY * Recorder.resMultiplier,
 				endX * Recorder.resMultiplier, endY * Recorder.resMultiplier
-		));
+											   ));
 	}
 
 	private void drawCircle(DrawEvent drawEvent, double centreX, double centreY, double radius) {
 		Platform.runLater(() -> drawer.drawCircle(
 				drawEvent, centreX * Recorder.resMultiplier, centreY * Recorder.resMultiplier,
 				radius * Recorder.resMultiplier)
-		);
+						 );
 	}
 }

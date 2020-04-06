@@ -16,7 +16,6 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.MenuItem;
 import javafx.scene.image.WritableImage;
 import javafx.stage.FileChooser;
-import javafx.stage.Screen;
 import javafx.stage.Stage;
 import org.jnativehook.GlobalScreen;
 
@@ -48,7 +47,8 @@ public class Recorder {
 	public boolean startRecording(Main main, double resMultiplier) {
 		if (state != State.STOPPED)
 			return false;
-		state = State.RECORDING;
+
+		state = State.PRE_RECORDING;
 
 		Recorder.resMultiplier = resMultiplier;
 
@@ -66,6 +66,8 @@ public class Recorder {
 
 		mouseHook = new MouseHook(drawer, Main.screenWidth, Main.screenHeight);
 		keyboardHook = new KeyboardHook(drawer, Main.screenWidth, Main.screenHeight);
+
+		state = State.RECORDING;
 
 		return true;
 	}
