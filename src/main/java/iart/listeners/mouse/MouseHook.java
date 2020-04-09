@@ -5,6 +5,7 @@ import iart.draw.DrawEvent;
 import iart.draw.Drawer;
 import iart.recorder.Recorder;
 import iart.recorder.State;
+import iart.transformers.ScreenCoordinatesTransformer;
 import javafx.application.Platform;
 import javafx.geometry.Rectangle2D;
 import javafx.stage.Screen;
@@ -13,7 +14,9 @@ import org.jnativehook.mouse.NativeMouseEvent;
 import org.jnativehook.mouse.NativeMouseInputListener;
 
 import java.awt.*;
+import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 /**
  * Listens for mouse events and triggers draw events to create a visual representation of the users mouse movements
@@ -30,6 +33,8 @@ public class MouseHook implements NativeMouseInputListener {
 	private int mPressCircleRad;
 
 	private int xOffset, yOffset;
+
+	private boolean isTransformationNeeded;
 
 	/**
 	 * Sets up the mouse listener and registers it as a global listener. Once this constructor returns, the mouse
@@ -50,6 +55,12 @@ public class MouseHook implements NativeMouseInputListener {
 		GlobalScreen.addNativeMouseMotionListener(this);
 
 		calibrateMouseCapture();
+
+		isTransformationNeeded = Screen.getScreens().stream()
+				.anyMatch(screen -> !screen.getBounds().contains(0, 0) &&
+									!screen.getBounds().contains(0, Main.screenHeight) &&
+									!screen.getBounds().contains(Main.screenWidth, 0) &&
+									!screen.getBounds().contains(Main.screenWidth, Main.screenHeight));
 	}
 
 	/**
@@ -94,6 +105,7 @@ public class MouseHook implements NativeMouseInputListener {
 		long diff;
 
 		calculateOffsets(location);
+		ScreenCoordinatesTransformer.getInstance().transformPoint(location);
 
 		/*
 		 * If the mouse has moved, draw a line between previous position and current position.
@@ -127,6 +139,18 @@ public class MouseHook implements NativeMouseInputListener {
 		if (currLocation.getY() + yOffset < 0)
 			yOffset = (int) -currLocation.getY();
 		currLocation.setLocation(currLocation.x + xOffset, currLocation.y + yOffset);
+	}
+
+	// TODO
+	private void calculateTransformations(Point currLocation) {
+		if (isTransformationNeeded) {
+			final List<Screen> screens = Screen.getScreens().stream().filter(screen -> screen.getBounds().contains(currLocation.x, currLocation.y)).collect(Collectors.toList());
+			if (screens.size() != 1)
+				return;
+
+			Rectangle2D realScreenRect = screens.get(0).getBounds();
+			Rectangle2D virtualScreenRect = null;
+		}
 	}
 
 	/**
