@@ -14,23 +14,23 @@ import org.jnativehook.mouse.NativeMouseEvent;
 import org.jnativehook.mouse.NativeMouseInputListener;
 
 import java.awt.*;
-import java.util.List;
 import java.util.Random;
-import java.util.stream.Collectors;
 
 /**
  * Listens for mouse events and triggers draw events to create a visual representation of the users mouse movements
  * and clicks.
  */
 public class MouseHook implements NativeMouseInputListener {
-	private Drawer drawer;
+	private final Drawer drawer;
 
-	private Random rand = new Random();
+	private final Random rand = new Random();
 	private Point prevLocation;
 	private long lastMove;
 	private boolean mousePressed;
 
-	private int mPressCircleRad;
+	private final int mPressCircleRad;
+
+	private int prevScreenCollectionHash;
 
 	private int xOffset, yOffset;
 
@@ -56,6 +56,8 @@ public class MouseHook implements NativeMouseInputListener {
 
 		calibrateMouseCapture();
 
+		prevScreenCollectionHash = Screen.getScreens().hashCode();
+
 		isTransformationNeeded = Screen.getScreens().stream()
 				.anyMatch(screen -> !screen.getBounds().contains(0, 0) &&
 									!screen.getBounds().contains(0, Main.screenHeight) &&
@@ -63,12 +65,25 @@ public class MouseHook implements NativeMouseInputListener {
 									!screen.getBounds().contains(Main.screenWidth, Main.screenHeight));
 	}
 
+	private void calibrateMouseCapture() {
+		State prevState = Recorder.state;
+		Recorder.state = State.CALIBRATING;
+		ScreenCoordinatesTransformer.invalidateCurrentInstance();
+		prevScreenCollectionHash = Screen.getScreens().hashCode();
+
+		calibrateAxisOffsets();
+
+		Recorder.state = prevState;
+	}
+
 	/**
 	 * Move the mouse cursor to the top leftmost and bottom rightmost corners of each monitor. This way, the
 	 * {@link this#nativeMouseMoved(NativeMouseEvent)} method can calibrate itself (calculate the x/y offsets it needs
 	 * to apply, since the JNativeHook library miscalculates the x/y coords of the cursor on some multiple monitor setups).
 	 */
-	private void calibrateMouseCapture() {
+	private void calibrateAxisOffsets() {
+		xOffset = 0;
+		yOffset = 0;
 		try {
 			final Point originalMousePos = MouseInfo.getPointerInfo().getLocation();
 			for (Screen s : Screen.getScreens()) {
@@ -105,6 +120,8 @@ public class MouseHook implements NativeMouseInputListener {
 		long diff;
 
 		calculateOffsets(location);
+		if (Recorder.state != State.CALIBRATING && prevScreenCollectionHash != Screen.getScreens().hashCode())
+			calibrateMouseCapture();
 		ScreenCoordinatesTransformer.getInstance().transformPoint(location);
 
 		/*
@@ -139,18 +156,6 @@ public class MouseHook implements NativeMouseInputListener {
 		if (currLocation.getY() + yOffset < 0)
 			yOffset = (int) -currLocation.getY();
 		currLocation.setLocation(currLocation.x + xOffset, currLocation.y + yOffset);
-	}
-
-	// TODO
-	private void calculateTransformations(Point currLocation) {
-		if (isTransformationNeeded) {
-			final List<Screen> screens = Screen.getScreens().stream().filter(screen -> screen.getBounds().contains(currLocation.x, currLocation.y)).collect(Collectors.toList());
-			if (screens.size() != 1)
-				return;
-
-			Rectangle2D realScreenRect = screens.get(0).getBounds();
-			Rectangle2D virtualScreenRect = null;
-		}
 	}
 
 	/**

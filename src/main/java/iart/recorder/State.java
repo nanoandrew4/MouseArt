@@ -14,5 +14,5 @@ package iart.recorder;
  * STOPPED indicates the program has stopped tracking the cursor and is finalizing the image, to save it and start anew.
  */
 public enum State {
-	PRE_RECORDING, RECORDING, PAUSED, STOPPED
+	PRE_RECORDING, RECORDING, CALIBRATING, PAUSED, STOPPED
 }

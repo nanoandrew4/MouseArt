@@ -4,7 +4,6 @@ import iart.color_schemes.ColorSchemeSetup;
 import iart.listeners.keyboard.KeyboardLayoutUI;
 import iart.recorder.Recorder;
 import iart.recorder.State;
-import iart.transformers.ScreenCoordinatesTransformer;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Group;
@@ -80,7 +79,6 @@ public class Main extends Application {
 		primaryStage.setTitle("iArt");
 		primaryStage.show();
 
-		ScreenCoordinatesTransformer.getInstance();
 		if (!Files.exists(Paths.get(keysFileLoc)))
 			new KeyboardLayoutUI(primaryStage);
 	}
