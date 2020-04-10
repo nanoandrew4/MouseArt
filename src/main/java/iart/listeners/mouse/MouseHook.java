@@ -44,9 +44,9 @@ public class MouseHook implements NativeMouseInputListener {
 	 * @param screenWidth  Width of the screen(s) in pixels
 	 * @param screenHeight Height of the screen(s) in pixels
 	 */
-	public MouseHook(Drawer drawer, int screenWidth, int screenHeight) {
+	public MouseHook(Drawer drawer, double screenWidth, double screenHeight) {
 		this.drawer = drawer;
-		mPressCircleRad = (Math.max(screenWidth, screenHeight)) / 50;
+		mPressCircleRad = (int) (Math.max(screenWidth, screenHeight) / 50);
 
 		prevLocation = MouseInfo.getPointerInfo().getLocation();
 		lastMove = System.currentTimeMillis();
@@ -106,7 +106,7 @@ public class MouseHook implements NativeMouseInputListener {
 		if (mousePressed)
 			return;
 		mousePressed = true;
-		drawCircle(DrawEvent.LMOUSE_PRESS, prevLocation.x, prevLocation.y, rand.nextInt(mPressCircleRad) + 5);
+		drawCircle(DrawEvent.LMOUSE_PRESS, prevLocation, rand.nextInt(mPressCircleRad) + 5);
 	}
 
 	@Override
@@ -133,11 +133,11 @@ public class MouseHook implements NativeMouseInputListener {
 			if (!prevLocation.equals(location)) {
 				if ((diff = System.currentTimeMillis() - lastMove) > 3000) {
 					double radius = getMouseMoveRadius(diff / 1000d);
-					drawCircle(DrawEvent.MOVE_OUTER_CIRCLE, location.x, location.y, radius);
-					drawCircle(DrawEvent.MOVE_INNER_CIRCLE, location.x, location.y, radius / 10);
+					drawCircle(DrawEvent.MOVE_OUTER_CIRCLE, location, radius);
+					drawCircle(DrawEvent.MOVE_INNER_CIRCLE, location, radius / 10);
 				}
 				lastMove = System.currentTimeMillis();
-				drawLine(prevLocation.x, prevLocation.y, location.x, location.y);
+				drawLine(prevLocation, location);
 			}
 		}
 		prevLocation = location;
@@ -169,25 +169,18 @@ public class MouseHook implements NativeMouseInputListener {
 	 */
 	private static double getMouseMoveRadius(double diffSecs) {
 		return ((Main.screenWidth > Main.screenHeight ? Main.screenHeight : Main.screenHeight) / 4d) /
-			   (1d + 35d * Math.exp(-0.001d * diffSecs))
-			   - 15d;
+			   (1d + 35d * Math.exp(-0.001d * diffSecs)) - 15d;
 	}
 
 	@Override
 	public void nativeMouseDragged(NativeMouseEvent nativeMouseEvent) {
 	}
 
-	private void drawLine(double startX, double startY, double endX, double endY) {
-		Platform.runLater(() -> drawer.drawLine(
-				startX * Recorder.resMultiplier, startY * Recorder.resMultiplier,
-				endX * Recorder.resMultiplier, endY * Recorder.resMultiplier
-											   ));
+	private void drawLine(Point start, Point end) {
+		Platform.runLater(() -> drawer.drawLine(start, end));
 	}
 
-	private void drawCircle(DrawEvent drawEvent, double centreX, double centreY, double radius) {
-		Platform.runLater(() -> drawer.drawCircle(
-				drawEvent, centreX * Recorder.resMultiplier, centreY * Recorder.resMultiplier,
-				radius * Recorder.resMultiplier)
-						 );
+	private void drawCircle(DrawEvent drawEvent, Point center, double radius) {
+		Platform.runLater(() -> drawer.drawCircle(drawEvent, center, radius * Recorder.resMultiplier));
 	}
 }

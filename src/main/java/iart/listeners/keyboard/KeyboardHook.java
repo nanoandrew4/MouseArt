@@ -21,7 +21,7 @@ public class KeyboardHook implements NativeKeyListener {
 	private KeyboardLayout layout;
 	private Random rand = new Random();
 
-	private int screenWidth, screenHeight;
+	private double screenWidth, screenHeight;
 
 	private int squareMaxWidth; // Max size that a square drawn by a keystroke can be
 
@@ -33,12 +33,12 @@ public class KeyboardHook implements NativeKeyListener {
 	 * @param screenWidth  Width of the screen(s) in pixels
 	 * @param screenHeight Height of the screen(s) in pixels
 	 */
-	public KeyboardHook(Drawer drawer, int screenWidth, int screenHeight) {
+	public KeyboardHook(Drawer drawer, double screenWidth, double screenHeight) {
 		this.drawer = drawer;
 		this.screenWidth = screenWidth;
 		this.screenHeight = screenHeight;
 
-		squareMaxWidth = (screenWidth > screenHeight ? screenWidth : screenHeight) / 100;
+		squareMaxWidth = (int) (screenWidth > screenHeight ? screenWidth : screenHeight) / 100;
 
 		layout = KeyboardLayout.loadKeyboardLayout(Main.keysFileLoc);
 		GlobalScreen.addNativeKeyListener(this);
@@ -51,13 +51,13 @@ public class KeyboardHook implements NativeKeyListener {
 
 			if (keyPos != null) {
 				int keysInRow = layout.getRowWidths().get(keyPos.y);
-				int topLeftX = (screenWidth / keysInRow) * keyPos.x;
-				int topLeftY = (screenHeight / layout.getNumOfRows()) * keyPos.y;
-				int drawPosX = topLeftX + rand.nextInt((screenWidth / keysInRow) - squareMaxWidth);
-				int drawPosY = topLeftY + rand.nextInt((screenHeight / layout.getNumOfRows()) - squareMaxWidth);
+				int topLeftX = (int) (screenWidth / keysInRow) * keyPos.x;
+				int topLeftY = (int) (screenHeight / layout.getNumOfRows()) * keyPos.y;
+				int drawPosX = topLeftX + rand.nextInt((int) (screenWidth / keysInRow) - squareMaxWidth);
+				int drawPosY = topLeftY + rand.nextInt((int) (screenHeight / layout.getNumOfRows()) - squareMaxWidth);
 
 				Platform.runLater(() -> drawer.drawSquare(
-						drawPosX, drawPosY, rand.nextInt(squareMaxWidth - 10) + 10)
+						new Point(drawPosX, drawPosY), rand.nextInt(squareMaxWidth - 10) + 10)
 				);
 			}
 		}
