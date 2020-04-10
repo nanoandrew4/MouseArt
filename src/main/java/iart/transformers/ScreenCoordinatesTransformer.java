@@ -14,7 +14,7 @@ public class ScreenCoordinatesTransformer {
 
 	private static ScreenCoordinatesTransformer instance;
 
-	private Rectangle2D[][] virtualScreens;
+	private List<Rectangle2D> virtualScreens;
 
 	private HashMap<Rectangle2D, TransformerFunctionPair> screenTransformations;
 
@@ -23,7 +23,7 @@ public class ScreenCoordinatesTransformer {
 	}
 
 	private ScreenCoordinatesTransformer() {
-		calculateVirtualScreens();
+		createVirtualScreens();
 		calculateTransformationsForScreens();
 	}
 
@@ -31,16 +31,8 @@ public class ScreenCoordinatesTransformer {
 		return instance;
 	}
 
-	public static ScreenCoordinatesTransformer getNewInstance() {
-		return (instance = new ScreenCoordinatesTransformer());
-	}
-
-	public Optional<Rectangle2D> getVirtualScreenForPoint(Point p) {
-		for (int j = 0; j < virtualScreens.length; j++)
-			for (int i = 0; i < virtualScreens[j].length; i++)
-				if (virtualScreens[i][j].contains(p.x, p.y))
-					return Optional.of(virtualScreens[i][j]);
-		return Optional.empty();
+	public static void invalidateCurrentInstance() {
+		instance = new ScreenCoordinatesTransformer();
 	}
 
 	private Optional<Rectangle2D> getRealScreenForPoint(Point p) {
@@ -53,72 +45,77 @@ public class ScreenCoordinatesTransformer {
 			transformerFunctionPair.transform(p);
 	}
 
+	private CoordinateTransformationInfo createTransformationInfo(Rectangle2D realScreenBounds, Rectangle2D virtualScreenBounds) {
+		boolean requiresXAxisTransformation = realScreenBounds.getMinX() != virtualScreenBounds.getMinX() || realScreenBounds.getMaxX() != virtualScreenBounds.getMaxX();
+		boolean requiresYAxisTransformation = realScreenBounds.getMinY() != virtualScreenBounds.getMinY() || realScreenBounds.getMaxY() != virtualScreenBounds.getMaxY();
+		if (requiresXAxisTransformation && !requiresYAxisTransformation)
+			return new CoordinateTransformationInfo(TransformationAxis.X);
+		else if (requiresYAxisTransformation && !requiresXAxisTransformation)
+			return new CoordinateTransformationInfo(TransformationAxis.Y);
+		else
+			return new CoordinateTransformationInfo(TransformationAxis.UNKNOWN);
+	}
+
 	public void calculateTransformationsForScreens() {
 		screenTransformations = new HashMap<>();
 
-		Map<Rectangle2D, CoordinateTransformationInfo> intersectingScreens = new HashMap<>();
-		List<Rectangle2D> virtualScreens = collectVirtualScreens();
-		Screen.getScreens().stream().map(Screen::getBounds).forEach(realScreenBounds -> {
-			virtualScreens.forEach(virtualScreenBounds -> {
-				if (realScreenBounds.intersects(virtualScreenBounds) && !realScreenBounds.equals(virtualScreenBounds)) {
-					CoordinateTransformationInfo transformationInfo = intersectingScreens.get(realScreenBounds);
-					if (transformationInfo == null) {
-						boolean requiresXAxisTransformation = realScreenBounds.getMinX() != virtualScreenBounds.getMinX() || realScreenBounds.getMaxX() != virtualScreenBounds.getMaxX();
-						boolean requiresYAxisTransformation = realScreenBounds.getMinY() != virtualScreenBounds.getMinY() || realScreenBounds.getMaxY() != virtualScreenBounds.getMaxY();
-						if (requiresXAxisTransformation && !requiresYAxisTransformation)
-							transformationInfo = new CoordinateTransformationInfo(TransformationAxis.X);
-						else if (requiresYAxisTransformation && !requiresXAxisTransformation)
-							transformationInfo = new CoordinateTransformationInfo(TransformationAxis.Y);
-						else
-							transformationInfo = new CoordinateTransformationInfo(TransformationAxis.UNKNOWN);
-					} else {
-						boolean isTransformingXAxis = transformationInfo.getAxis() == TransformationAxis.X;
-						double maxValue = Math.max(transformationInfo.getCombinedIntersectingVirtualScreensWidthOrHeight(), isTransformingXAxis ? virtualScreenBounds.getMaxX() : virtualScreenBounds.getMaxY());
-						transformationInfo.setCombinedIntersectingVirtualScreensWidthOrHeight(maxValue);
-					}
-					intersectingScreens.put(realScreenBounds, transformationInfo);
-				}
-			});
-		});
+		Map<Rectangle2D, CoordinateTransformationInfo> transformationInfoMap = generateTransformationInfo();
+		calculateTransformations(transformationInfoMap);
+	}
 
-		intersectingScreens.forEach((realScreen, transformationInfo) -> {
+	private void calculateTransformations(Map<Rectangle2D, CoordinateTransformationInfo> transformationInfoMap) {
+		transformationInfoMap.forEach((realScreen, transformationInfo) -> {
 			Function<Integer, Integer> transformX = x -> x, transformY = y -> y;
 
 			if (transformationInfo.getAxis() == TransformationAxis.X)
-				transformX = (x) -> (int) (((x - realScreen.getMinX()) / (realScreen.getWidth())) * transformationInfo.getCombinedIntersectingVirtualScreensWidthOrHeight());
+				transformX = (x) -> (int) (((x - realScreen.getMinX()) / (realScreen.getWidth())) * transformationInfo.getIntersectingVirtualScreensLength());
 			else if (transformationInfo.getAxis() == TransformationAxis.Y)
-				transformY = (y) -> (int) (((y - realScreen.getMinY()) / (realScreen.getHeight()) * transformationInfo.getCombinedIntersectingVirtualScreensWidthOrHeight()));
+				transformY = (y) -> (int) (((y - realScreen.getMinY()) / (realScreen.getHeight()) * transformationInfo.getIntersectingVirtualScreensLength()));
 
 			screenTransformations.put(realScreen, new TransformerFunctionPair(transformX, transformY));
 		});
 	}
 
-	private List<Rectangle2D> collectVirtualScreens() {
-		List<Rectangle2D> collectedVirtualScreens = new LinkedList<>();
-		for (Rectangle2D[] virtualScreen : virtualScreens)
-			collectedVirtualScreens.addAll(Arrays.asList(virtualScreen));
-		return collectedVirtualScreens;
+	private Map<Rectangle2D, CoordinateTransformationInfo> generateTransformationInfo() {
+		Map<Rectangle2D, CoordinateTransformationInfo> transformationInfoMap = new HashMap<>();
+
+		Screen.getScreens().stream().map(Screen::getBounds).forEach(realScreenBounds -> {
+			virtualScreens.forEach(virtualScreenBounds -> {
+				if (realScreenBounds.intersects(virtualScreenBounds) && !realScreenBounds.equals(virtualScreenBounds)) {
+					CoordinateTransformationInfo transformationInfo = transformationInfoMap.get(realScreenBounds);
+					if (transformationInfo == null) {
+						transformationInfo = createTransformationInfo(realScreenBounds, virtualScreenBounds);
+					} else {
+						boolean isTransformingXAxis = transformationInfo.getAxis() == TransformationAxis.X;
+						double maxValue = Math.max(transformationInfo.getIntersectingVirtualScreensLength(), isTransformingXAxis ? virtualScreenBounds.getMaxX() : virtualScreenBounds.getMaxY());
+						transformationInfo.setIntersectingVirtualScreensLength(maxValue);
+					}
+					transformationInfoMap.put(realScreenBounds, transformationInfo);
+				}
+			});
+		});
+		return transformationInfoMap;
 	}
 
-	private void calculateVirtualScreens() {
-		int screensHorizontally = (int) getMaxScreensOnXAxis();
-		int screensVertically = (int) getMaxScreensOnYAxis();
+	private void createVirtualScreens() {
+		int screensHorizontally = (int) getMaxNumOfScreensOnXAxis();
+		int screensVertically = (int) getMaxNumOfScreensOnYAxis();
 
 		if (screensHorizontally + screensVertically > 2 && screensHorizontally == 1)
 			screensHorizontally++;
 		if (screensHorizontally + screensVertically > 2 && screensVertically == 1)
 			screensVertically++;
 
-		virtualScreens = new Rectangle2D[screensHorizontally][screensVertically];
+		virtualScreens = new LinkedList<>();
 
 		final double virtualScreenWidth = (double) Main.screenWidth / screensHorizontally;
 		final double virtualScreenHeight = (double) Main.screenHeight / screensVertically;
 		for (int j = 0; j < screensVertically; j++)
 			for (int i = 0; i < screensHorizontally; i++)
-				virtualScreens[i][j] = new Rectangle2D(virtualScreenWidth * i, virtualScreenHeight * j, virtualScreenWidth, virtualScreenHeight);
+				virtualScreens.add(new Rectangle2D(virtualScreenWidth * i, virtualScreenHeight * j, virtualScreenWidth, virtualScreenHeight));
 	}
 
-	private long getMaxScreensOnXAxis() {
+	private long getMaxNumOfScreensOnXAxis() {
 		List<Rectangle2D> realScreenBounds = Screen.getScreens().stream().map(Screen::getBounds).collect(Collectors.toList());
 		Set<Double> screenHeights = new HashSet<>();
 		realScreenBounds.forEach(rectangle2D -> screenHeights.add(rectangle2D.getMinY()));
@@ -129,7 +126,7 @@ public class ScreenCoordinatesTransformer {
 		return maxScreensHorizontally;
 	}
 
-	private long getMaxScreensOnYAxis() {
+	private long getMaxNumOfScreensOnYAxis() {
 		List<Rectangle2D> realScreenBounds = Screen.getScreens().stream().map(Screen::getBounds).collect(Collectors.toList());
 		Set<Double> screenWidths = new HashSet<>();
 		realScreenBounds.forEach(rectangle2D -> screenWidths.add(rectangle2D.getMinX()));

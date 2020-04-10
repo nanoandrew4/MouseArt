@@ -1,7 +1,7 @@
 package iart.transformers;
 
 public class CoordinateTransformationInfo {
-	private double combinedIntersectingVirtualScreensWidthOrHeight;
+	private double intersectingVirtualScreensLength;
 
 	private TransformationAxis axis;
 
@@ -17,11 +17,11 @@ public class CoordinateTransformationInfo {
 		return axis;
 	}
 
-	public void setCombinedIntersectingVirtualScreensWidthOrHeight(double combinedIntersectingVirtualScreensWidthOrHeight) {
-		this.combinedIntersectingVirtualScreensWidthOrHeight = combinedIntersectingVirtualScreensWidthOrHeight;
+	public void setIntersectingVirtualScreensLength(double intersectingVirtualScreensLength) {
+		this.intersectingVirtualScreensLength = intersectingVirtualScreensLength;
 	}
 
-	public double getCombinedIntersectingVirtualScreensWidthOrHeight() {
-		return combinedIntersectingVirtualScreensWidthOrHeight;
+	public double getIntersectingVirtualScreensLength() {
+		return intersectingVirtualScreensLength;
 	}
 }
