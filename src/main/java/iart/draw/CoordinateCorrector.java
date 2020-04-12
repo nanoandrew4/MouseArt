@@ -1,6 +1,6 @@
 package iart.draw;
 
-import iart.Main;
+import iart.GlobalVariables;
 import javafx.stage.Screen;
 
 import java.awt.geom.Point2D;
@@ -21,9 +21,9 @@ public class CoordinateCorrector {
 			}
 		}
 
-		if (Main.screenHeight / Main.screenWidth > 0.75d) // Vertical layout
+		if (GlobalVariables.screenHeight / GlobalVariables.screenWidth > 0.75d) // Vertical layout
 			corrector = this::correctVertically;
-		else if (Main.screenWidth / Main.screenHeight > 2d) // Horizontal layout
+		else if (GlobalVariables.screenWidth / GlobalVariables.screenHeight > 2d) // Horizontal layout
 			corrector = this::correctHorizontally;
 		else { // Square layout (vertical and horizontal)
 			corrector = (point2D -> {

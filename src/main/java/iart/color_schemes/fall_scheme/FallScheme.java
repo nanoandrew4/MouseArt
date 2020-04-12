@@ -1,6 +1,6 @@
 package iart.color_schemes.fall_scheme;
 
-import iart.Main;
+import iart.GlobalVariables;
 import iart.color_schemes.ColorScheme;
 import iart.draw.DrawEvent;
 import javafx.scene.paint.Color;
@@ -37,7 +37,7 @@ public class FallScheme implements ColorScheme, NativeMouseWheelListener {
 	public Color getColor(DrawEvent drawEvent, Point2D eventLoc) {
 		double locToEdegeRatio = 0d;
 		if (eventLoc != null)
-			locToEdegeRatio = vertical ? eventLoc.getY() / Main.screenHeight : eventLoc.getX() / Main.screenWidth;
+			locToEdegeRatio = vertical ? eventLoc.getY() / GlobalVariables.screenHeight : eventLoc.getX() / GlobalVariables.screenWidth;
 		switch (drawEvent) {
 			case MOUSE_MOVE:
 				return Color.hsb(grayscale ? 0d : currHue,

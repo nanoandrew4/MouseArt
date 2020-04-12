@@ -1,5 +1,6 @@
 package iart.recorder;
 
+import iart.GlobalVariables;
 import iart.Main;
 import iart.color_schemes.ColorScheme;
 import iart.color_schemes.grayscale_scheme.GrayscaleScheme;
@@ -57,19 +58,19 @@ public class Recorder {
 		Recorder.resMultiplier = resMultiplier;
 
 		Main.resetScreenDimensions();
-		Main.screenWidth *= resMultiplier;
-		Main.screenHeight *= resMultiplier;
+		GlobalVariables.screenWidth *= resMultiplier;
+		GlobalVariables.screenHeight *= resMultiplier;
 
-		canvas = new Canvas(Main.screenWidth, Main.screenHeight);
+		canvas = new Canvas(GlobalVariables.screenWidth, GlobalVariables.screenHeight);
 
 		GraphicsContext gc = canvas.getGraphicsContext2D();
 		gc.setFill(colorScheme.getColor(DrawEvent.BACKGROUND, null));
-		gc.fillRect(0, 0, Main.screenWidth, Main.screenHeight);
+		gc.fillRect(0, 0, GlobalVariables.screenWidth, GlobalVariables.screenHeight);
 
 		Drawer drawer = new Drawer(main, gc);
 
-		mouseHook = new MouseHook(drawer, Main.screenWidth, Main.screenHeight);
-		keyboardHook = new KeyboardHook(drawer, Main.screenWidth, Main.screenHeight);
+		mouseHook = new MouseHook(drawer, GlobalVariables.screenWidth, GlobalVariables.screenHeight);
+		keyboardHook = new KeyboardHook(drawer, GlobalVariables.screenWidth, GlobalVariables.screenHeight);
 
 		state = State.RECORDING;
 

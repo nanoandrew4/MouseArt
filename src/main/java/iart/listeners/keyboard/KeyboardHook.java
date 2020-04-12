@@ -1,8 +1,8 @@
 package iart.listeners.keyboard;
 
-import iart.recorder.Recorder;
-import iart.draw.Drawer;
 import iart.Main;
+import iart.draw.Drawer;
+import iart.recorder.Recorder;
 import iart.recorder.State;
 import javafx.application.Platform;
 import org.jnativehook.GlobalScreen;
@@ -16,14 +16,14 @@ import java.util.Random;
  * Listens for keyboard events and triggers draw events to create a visual representation of the users keyboard use.
  */
 public class KeyboardHook implements NativeKeyListener {
-	private Drawer drawer;
+	private final Drawer drawer;
 
-	private KeyboardLayout layout;
-	private Random rand = new Random();
+	private final KeyboardLayout layout;
+	private final Random rand = new Random();
 
-	private double screenWidth, screenHeight;
+	private final double screenWidth, screenHeight;
 
-	private int squareMaxWidth; // Max size that a square drawn by a keystroke can be
+	private final int squareMaxWidth; // Max size that a square drawn by a keystroke can be
 
 	/**
 	 * Sets up the keyboard listener and registers it as a global listener. Once this constructor returns, the keyboard
@@ -38,7 +38,7 @@ public class KeyboardHook implements NativeKeyListener {
 		this.screenWidth = screenWidth;
 		this.screenHeight = screenHeight;
 
-		squareMaxWidth = (int) (screenWidth > screenHeight ? screenWidth : screenHeight) / 100;
+		squareMaxWidth = (int) (Math.max(screenWidth, screenHeight) / 100);
 
 		layout = KeyboardLayout.loadKeyboardLayout(Main.keysFileLoc);
 		GlobalScreen.addNativeKeyListener(this);

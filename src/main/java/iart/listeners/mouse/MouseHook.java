@@ -1,11 +1,11 @@
 package iart.listeners.mouse;
 
-import iart.Main;
+import iart.GlobalVariables;
 import iart.draw.DrawEvent;
 import iart.draw.Drawer;
 import iart.recorder.Recorder;
 import iart.recorder.State;
-import iart.transformers.ScreenCoordinatesTransformer;
+import iart.transformers.ScreenCoordinateTransformer;
 import javafx.application.Platform;
 import javafx.geometry.Rectangle2D;
 import javafx.stage.Screen;
@@ -24,7 +24,7 @@ public class MouseHook implements NativeMouseInputListener {
 	private final Drawer drawer;
 
 	private final Random rand = new Random();
-	private Point prevLocation;
+	private Point prevLocation, dragStartLocation;
 	private long lastMove;
 	private boolean mousePressed;
 
@@ -33,8 +33,6 @@ public class MouseHook implements NativeMouseInputListener {
 	private int prevScreenCollectionHash;
 
 	private int xOffset, yOffset;
-
-	private boolean isTransformationNeeded;
 
 	/**
 	 * Sets up the mouse listener and registers it as a global listener. Once this constructor returns, the mouse
@@ -57,23 +55,20 @@ public class MouseHook implements NativeMouseInputListener {
 		calibrateMouseCapture();
 
 		prevScreenCollectionHash = Screen.getScreens().hashCode();
-
-		isTransformationNeeded = Screen.getScreens().stream()
-				.anyMatch(screen -> !screen.getBounds().contains(0, 0) &&
-									!screen.getBounds().contains(0, Main.screenHeight) &&
-									!screen.getBounds().contains(Main.screenWidth, 0) &&
-									!screen.getBounds().contains(Main.screenWidth, Main.screenHeight));
 	}
 
-	private void calibrateMouseCapture() {
-		State prevState = Recorder.state;
-		Recorder.state = State.CALIBRATING;
-		ScreenCoordinatesTransformer.invalidateCurrentInstance();
-		prevScreenCollectionHash = Screen.getScreens().hashCode();
-
-		calibrateAxisOffsets();
-
-		Recorder.state = prevState;
+	/**
+	 * Returns a radius for the circle to be drawn when the mouse is moved, after being stopped for a bit. The formula
+	 * is a modified sigmoid function, chosen because I think it works well for this purpose. It caps at a quarter the
+	 * shortest screen dimension, so that the circles can not get infinitely big. Completely made up, the values were
+	 * toyed with until a good result was given.
+	 *
+	 * @param diffSecs Time between when the mouse stopped moving and when it started moving again
+	 * @return Radius to use when drawing the mouse move circle
+	 */
+	private static double getMouseMoveRadius(double diffSecs) {
+		return ((GlobalVariables.screenWidth > GlobalVariables.screenHeight ? GlobalVariables.screenHeight : GlobalVariables.screenHeight) / 4d) /
+			   (1d + 35d * Math.exp(-0.001d * diffSecs)) - 15d;
 	}
 
 	/**
@@ -109,9 +104,40 @@ public class MouseHook implements NativeMouseInputListener {
 		drawCircle(DrawEvent.LMOUSE_PRESS, prevLocation, rand.nextInt(mPressCircleRad) + 5);
 	}
 
+	private void calibrateMouseCapture() {
+		State prevState = Recorder.state;
+		Recorder.state = State.CALIBRATING;
+		ScreenCoordinateTransformer.createNewInstance();
+		prevScreenCollectionHash = Screen.getScreens().hashCode();
+
+		calibrateAxisOffsets();
+
+		Recorder.state = prevState;
+	}
+
 	@Override
 	public void nativeMouseReleased(NativeMouseEvent nativeMouseEvent) {
+		if (dragStartLocation != null) {
+			// TODO: Draw rectangle with semi transparent fill
+			Point dragEndLocation = nativeMouseEvent.getPoint();
+			dragStartLocation = null;
+		}
 		mousePressed = false;
+	}
+
+	/**
+	 * Calculate the offsets, so that the location supplied by JNativeHook can be corrected, if necessary.
+	 * For example, a 3 monitor setup, with two monitors on top and one below and between them where the bottom
+	 * monitor is the primary monitor will cause a miscalculation by JNativeHook.
+	 *
+	 * @param currLocation Current location of the mouse cursor as reported by JNativeHook
+	 */
+	private void calculateOffsets(Point currLocation) {
+		if (currLocation.getX() + xOffset < 0)
+			xOffset = (int) -currLocation.getX();
+		if (currLocation.getY() + yOffset < 0)
+			yOffset = (int) -currLocation.getY();
+		currLocation.setLocation(currLocation.x + xOffset, currLocation.y + yOffset);
 	}
 
 	@Override
@@ -122,7 +148,7 @@ public class MouseHook implements NativeMouseInputListener {
 		calculateOffsets(location);
 		if (Recorder.state != State.CALIBRATING && prevScreenCollectionHash != Screen.getScreens().hashCode())
 			calibrateMouseCapture();
-		ScreenCoordinatesTransformer.getInstance().transformPoint(location);
+		ScreenCoordinateTransformer.getInstance().transformPoint(location);
 
 		/*
 		 * If the mouse has moved, draw a line between previous position and current position.
@@ -143,37 +169,10 @@ public class MouseHook implements NativeMouseInputListener {
 		prevLocation = location;
 	}
 
-	/**
-	 * Calculate the offsets, so that the location supplied by JNativeHook can be corrected, if necessary.
-	 * For example, a 3 monitor setup, with two monitors on top and one below and between them where the bottom
-	 * monitor is the primary monitor will cause a miscalculation by JNativeHook.
-	 *
-	 * @param currLocation Current location of the mouse cursor as reported by JNativeHook
-	 */
-	private void calculateOffsets(Point currLocation) {
-		if (currLocation.getX() + xOffset < 0)
-			xOffset = (int) -currLocation.getX();
-		if (currLocation.getY() + yOffset < 0)
-			yOffset = (int) -currLocation.getY();
-		currLocation.setLocation(currLocation.x + xOffset, currLocation.y + yOffset);
-	}
-
-	/**
-	 * Returns a radius for the circle to be drawn when the mouse is moved, after being stopped for a bit. The formula
-	 * is a modified sigmoid function, chosen because I think it works well for this purpose. It caps at a quarter the
-	 * shortest screen dimension, so that the circles can not get infinitely big. Completely made up, the values were
-	 * toyed with until a good result was given.
-	 *
-	 * @param diffSecs Time between when the mouse stopped moving and when it started moving again
-	 * @return Radius to use when drawing the mouse move circle
-	 */
-	private static double getMouseMoveRadius(double diffSecs) {
-		return ((Main.screenWidth > Main.screenHeight ? Main.screenHeight : Main.screenHeight) / 4d) /
-			   (1d + 35d * Math.exp(-0.001d * diffSecs)) - 15d;
-	}
-
 	@Override
 	public void nativeMouseDragged(NativeMouseEvent nativeMouseEvent) {
+		if (dragStartLocation == null)
+			dragStartLocation = nativeMouseEvent.getPoint();
 	}
 
 	private void drawLine(Point start, Point end) {

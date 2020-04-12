@@ -9,6 +9,9 @@ package iart.recorder;
  * RECORDING indicates the program is recording, which makes ImageRecorder to submit Operation objects to ImageDrawer,
  * to be drawn on to the canvas and the screen.
  * <p>
+ * CALIBRATING indicates that the program is recalibrating it's hooks in response to a change in screen layout,
+ * in order to preserve the integrity of the drawing process
+ * <p>
  * PAUSED indicates the program is not tracking the cursor, until resumed.
  * <p>
  * STOPPED indicates the program has stopped tracking the cursor and is finalizing the image, to save it and start anew.

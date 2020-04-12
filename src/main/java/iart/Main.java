@@ -31,33 +31,37 @@ import java.util.logging.Logger;
  */
 public class Main extends Application {
 
-	private static String dirSeparator = System.getProperty("os.name").toLowerCase().contains("windows") ? "\\" : "/";
+	private static final String dirSeparator = System.getProperty("os.name").toLowerCase().contains("windows") ? "\\" : "/";
 	public static String iArtFolderPath = System.getProperty("user.home") + dirSeparator + "Pictures" + dirSeparator +
 										  "iArt" + dirSeparator;
+	private static final Spinner<Double> resMultiplierSpinner = new Spinner<>(1d, 16d, 1d, 0.1);
 
-	private Recorder recorder = new Recorder();
-
-	public static double screenWidth, screenHeight;
 	private double sceneWidth, sceneHeight;
 	private boolean windowFocused = false;
 
 	private Scene previewScene;
 	private Group previewGroup;
-
-	private MenuBar menuBar = new MenuBar();
-	private MenuItem startRecording = new MenuItem("Start"), pauseRecording = new MenuItem("Pause"),
-			stopRecording = new MenuItem("Stop");
-	private ImageView geomPreview = new ImageView(); // Canvas preview
-
-	private SnapshotParameters snapshotParameters = new SnapshotParameters();
+	private final Recorder recorder = new Recorder();
+	private final MenuBar menuBar = new MenuBar();
+	private final MenuItem startRecording = new MenuItem("Start");
+	private final MenuItem pauseRecording = new MenuItem("Pause");
+	private final MenuItem stopRecording = new MenuItem("Stop");
+	private final ImageView geomPreview = new ImageView(); // Canvas preview
 
 	// Location on disk of the keyboard layout
 	public static final String keysFileLoc = System.getProperty("user.home") + "/.iart_keys";
-
-	private static Spinner<Double> resMultiplierSpinner = new Spinner<>(1d, 16d, 1d, 0.1);
+	private final SnapshotParameters snapshotParameters = new SnapshotParameters();
 
 	public static void main(String[] args) {
 		launch(args);
+	}
+
+	public static void resetScreenDimensions() {
+		// Get screen sizes, supports multiple monitors
+		for (int s = 0; s < Screen.getScreens().size(); s++) {
+			GlobalVariables.screenWidth = Math.max(GlobalVariables.screenWidth, (int) Screen.getScreens().get(s).getBounds().getMaxX());
+			GlobalVariables.screenHeight = Math.max(GlobalVariables.screenHeight, (int) Screen.getScreens().get(s).getBounds().getMaxY());
+		}
 	}
 
 	@Override
@@ -74,8 +78,8 @@ public class Main extends Application {
 
 		resetScreenDimensions();
 
-		sceneWidth = (int) (screenWidth * .25d);
-		sceneHeight = (int) (screenHeight * .25d);
+		sceneWidth = (int) (GlobalVariables.screenWidth * .25d);
+		sceneHeight = (int) (GlobalVariables.screenHeight * .25d);
 
 		previewScene = new Scene(previewGroup = new Group(), sceneWidth, sceneHeight);
 
@@ -86,6 +90,13 @@ public class Main extends Application {
 		primaryStage.setTitle("iArt");
 		primaryStage.show();
 
+		setOnCloseRequestHandler(primaryStage);
+
+		if (!Files.exists(Paths.get(keysFileLoc)))
+			new KeyboardLayoutUI(primaryStage);
+	}
+
+	private void setOnCloseRequestHandler(Stage primaryStage) {
 		primaryStage.setOnCloseRequest(event -> {
 			if (Recorder.state == State.RECORDING) {
 				Recorder.createIArtDirIfNotExists();
@@ -93,17 +104,6 @@ public class Main extends Application {
 			}
 			System.exit(0);
 		});
-
-		if (!Files.exists(Paths.get(keysFileLoc)))
-			new KeyboardLayoutUI(primaryStage);
-	}
-
-	public static void resetScreenDimensions() {
-		// Get screen sizes, supports multiple monitors
-		for (int s = 0; s < Screen.getScreens().size(); s++) {
-			screenWidth = Math.max(screenWidth, (int) Screen.getScreens().get(s).getBounds().getMaxX());
-			screenHeight = Math.max(screenHeight, (int) Screen.getScreens().get(s).getBounds().getMaxY());
-		}
 	}
 
 	/**
@@ -213,7 +213,7 @@ public class Main extends Application {
 	 */
 	private void updateSnapshotParams() {
 		snapshotParameters.setTransform(
-				Transform.scale(sceneWidth / (double) screenWidth, sceneHeight / (double) screenHeight)
-		);
+				Transform.scale(sceneWidth / GlobalVariables.screenWidth, sceneHeight / GlobalVariables.screenHeight)
+									   );
 	}
 }

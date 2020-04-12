@@ -1,8 +1,8 @@
 package iart.color_schemes.wheel_scheme;
 
+import iart.GlobalVariables;
 import iart.color_schemes.ColorScheme;
 import iart.draw.DrawEvent;
-import iart.Main;
 import javafx.scene.paint.Color;
 
 import java.awt.*;
@@ -35,7 +35,7 @@ public class WheelScheme implements ColorScheme {
 			case MOUSE_MOVE:
 			case KEYSTROKE:
 			case LMOUSE_PRESS:
-				Point centrePoint = new Point((int) Main.screenWidth / 2, (int) Main.screenHeight / 2);
+				Point centrePoint = new Point((int) GlobalVariables.screenWidth / 2, (int) GlobalVariables.screenHeight / 2);
 
 				double angleRad = Math.atan((centrePoint.getY() - eventLoc.getY()) / (eventLoc.getX() -
 																					  centrePoint.getX()));
@@ -106,7 +106,7 @@ public class WheelScheme implements ColorScheme {
 	 * @return Value between 0.33-1
 	 */
 	private double getOpacity(double distFromCentre) {
-		return 1 / (1d + 2 * Math.exp((-1 / (Main.screenHeight / 2d)) * distFromCentre));
+		return 1 / (1d + 2 * Math.exp((-1 / (GlobalVariables.screenHeight / 2d)) * distFromCentre));
 	}
 
 	/**
@@ -125,13 +125,13 @@ public class WheelScheme implements ColorScheme {
 		double slope = dy / dx;
 		double borderX, borderY;
 
-		double diagScreenSlope = Main.screenHeight / (double) Main.screenWidth;
+		double diagScreenSlope = GlobalVariables.screenHeight / (double) GlobalVariables.screenWidth;
 
 		if (slope > diagScreenSlope || slope < -diagScreenSlope) {
-			borderX = ((Main.screenHeight / 2d) * (py > 0 ? 1 : -1) - dy) / slope + dx;
+			borderX = ((GlobalVariables.screenHeight / 2d) * (py > 0 ? 1 : -1) - dy) / slope + dx;
 			borderY = (borderX * dy) / dx;
 		} else {
-			borderY = slope * ((Main.screenWidth / 2d) * (px > 0 ? 1 : -1) - dx) + dy;
+			borderY = slope * ((GlobalVariables.screenWidth / 2d) * (px > 0 ? 1 : -1) - dx) + dy;
 			borderX = (borderY * dx) / dy;
 		}
 
