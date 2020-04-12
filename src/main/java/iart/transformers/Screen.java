@@ -44,13 +44,23 @@ public class Screen {
 		updateTransformationX();
 	}
 
+	public void setTransformedBoundsMinY(double minY) {
+		transformedBounds = new Rectangle2D(transformedBounds.getMinX(), minY, transformedBounds.getWidth(), transformedBounds.getMaxY() - minY);
+		updateTransformationY();
+	}
+
+	public void setTransformedBoundsMaxY(double maxY) {
+		transformedBounds = new Rectangle2D(transformedBounds.getMinX(), transformedBounds.getMinY(), transformedBounds.getWidth(), maxY - transformedBounds.getMinY());
+		updateTransformationY();
+	}
+
 	private void updateTransformationX() {
 		Function<Integer, Integer> transformX = x -> (int) (((x - realBounds.getMinX()) / realBounds.getWidth()) * transformedBounds.getWidth() + transformedBounds.getMinX());
 		transformerFunctionPair.setTransformX(transformX);
 	}
 
 	private void updateTransformationY() {
-		Function<Integer, Integer> transformY = y -> y;
+		Function<Integer, Integer> transformY = y -> (int) (((y - realBounds.getMinY()) / realBounds.getHeight()) * transformedBounds.getHeight() + transformedBounds.getMinY());
 		transformerFunctionPair.setTransformY(transformY);
 	}
 
@@ -70,36 +80,52 @@ public class Screen {
 		this.transformedBounds = transformedBounds;
 	}
 
-	public boolean contains(Rectangle2D rect) {
-		return realBounds.contains(rect);
-	}
-
-	public boolean intersects(Rectangle2D rect) {
-		return realBounds.intersects(rect);
-	}
-
-	protected boolean hasNeighbourDirectlyToRight(Rectangle2D potentialNeighbourBounds) {
+	protected boolean hasNeighbourDirectlyOnRightSide(Rectangle2D potentialNeighbourBounds) {
 		return this.realBounds.getMaxX() == potentialNeighbourBounds.getMinX() &&
 			   ((this.realBounds.getMinY() < potentialNeighbourBounds.getMaxY() && this.realBounds.getMinY() >= potentialNeighbourBounds.getMinY()) ||
 				(this.realBounds.getMaxY() > potentialNeighbourBounds.getMinY() && this.realBounds.getMaxY() < potentialNeighbourBounds.getMaxY())); // TODO: POSSIBLE REFACTOR, LAST TWO LINES ARE THE SAME
 	}
 
-	protected boolean hasNeighbourToRight(Rectangle2D potentialNeighbourBounds) {
+	protected boolean hasNeighbourOnRightSide(Rectangle2D potentialNeighbourBounds) {
 		return this.realBounds.getMaxX() < potentialNeighbourBounds.getMinX() &&
 			   ((this.realBounds.getMinY() < potentialNeighbourBounds.getMaxY() && this.realBounds.getMinY() >= potentialNeighbourBounds.getMinY()) ||
 				(this.realBounds.getMaxY() > potentialNeighbourBounds.getMinY() && this.realBounds.getMaxY() < potentialNeighbourBounds.getMaxY())); // TODO: POSSIBLE REFACTOR, LAST TWO LINES ARE THE SAME
 	}
 
-	protected boolean hasNeighbourDirectlyToLeft(Rectangle2D potentialNeighbourBounds) {
+	protected boolean hasNeighbourDirectlyOnLeftSide(Rectangle2D potentialNeighbourBounds) {
 		return this.realBounds.getMinX() == potentialNeighbourBounds.getMaxX() &&
 			   ((this.realBounds.getMinY() < potentialNeighbourBounds.getMaxY() && this.realBounds.getMinY() >= potentialNeighbourBounds.getMinY()) ||
 				(this.realBounds.getMaxY() > potentialNeighbourBounds.getMinY() && this.realBounds.getMaxY() < potentialNeighbourBounds.getMaxY()));
 	}
 
-	protected boolean hasNeighbourToLeft(Rectangle2D potentialNeighbourBounds) {
+	protected boolean hasNeighbourOnLeftSide(Rectangle2D potentialNeighbourBounds) {
 		return this.realBounds.getMinX() > potentialNeighbourBounds.getMaxX() &&
 			   ((this.realBounds.getMinY() < potentialNeighbourBounds.getMaxY() && this.realBounds.getMinY() >= potentialNeighbourBounds.getMinY()) ||
 				(this.realBounds.getMaxY() > potentialNeighbourBounds.getMinY() && this.realBounds.getMaxY() < potentialNeighbourBounds.getMaxY()));
+	}
+
+	protected boolean hasNeighbourDirectlyOnTopSide(Rectangle2D potentialNeighbourBounds) {
+		return this.realBounds.getMinY() == potentialNeighbourBounds.getMaxY() &&
+			   ((this.realBounds.getMinX() < potentialNeighbourBounds.getMaxX() && this.realBounds.getMinX() >= potentialNeighbourBounds.getMinX()) ||
+				(this.realBounds.getMaxX() > potentialNeighbourBounds.getMinX() && this.realBounds.getMaxX() < potentialNeighbourBounds.getMaxX())); // TODO: POSSIBLE REFACTOR, LAST TWO LINES ARE THE SAME
+	}
+
+	protected boolean hasNeighbourOnTopSide(Rectangle2D potentialNeighbourBounds) {
+		return this.realBounds.getMinY() > potentialNeighbourBounds.getMaxY() &&
+			   ((this.realBounds.getMinX() < potentialNeighbourBounds.getMaxX() && this.realBounds.getMinX() >= potentialNeighbourBounds.getMinX()) ||
+				(this.realBounds.getMaxX() > potentialNeighbourBounds.getMinX() && this.realBounds.getMaxX() < potentialNeighbourBounds.getMaxX())); // TODO: POSSIBLE REFACTOR, LAST TWO LINES ARE THE SAME
+	}
+
+	protected boolean hasNeighbourDirectlyOnBottomSide(Rectangle2D potentialNeighbourBounds) {
+		return this.realBounds.getMaxY() == potentialNeighbourBounds.getMinY() &&
+			   ((this.realBounds.getMinX() < potentialNeighbourBounds.getMaxX() && this.realBounds.getMinX() >= potentialNeighbourBounds.getMinX()) ||
+				(this.realBounds.getMaxX() > potentialNeighbourBounds.getMinX() && this.realBounds.getMaxX() < potentialNeighbourBounds.getMaxX())); // TODO: POSSIBLE REFACTOR, LAST TWO LINES ARE THE SAME
+	}
+
+	protected boolean hasNeighbourOnBottomSide(Rectangle2D potentialNeighbourBounds) {
+		return this.realBounds.getMaxY() < potentialNeighbourBounds.getMinY() &&
+			   ((this.realBounds.getMinX() < potentialNeighbourBounds.getMaxX() && this.realBounds.getMinX() >= potentialNeighbourBounds.getMinX()) ||
+				(this.realBounds.getMaxX() > potentialNeighbourBounds.getMinX() && this.realBounds.getMaxX() < potentialNeighbourBounds.getMaxX())); // TODO: POSSIBLE REFACTOR, LAST TWO LINES ARE THE SAME
 	}
 
 	@Override

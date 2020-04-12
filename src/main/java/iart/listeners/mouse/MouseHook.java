@@ -49,12 +49,12 @@ public class MouseHook implements NativeMouseInputListener {
 		prevLocation = MouseInfo.getPointerInfo().getLocation();
 		lastMove = System.currentTimeMillis();
 
+		prevScreenCollectionHash = Screen.getScreens().hashCode();
+
 		GlobalScreen.addNativeMouseListener(this);
 		GlobalScreen.addNativeMouseMotionListener(this);
 
 		calibrateMouseCapture();
-
-		prevScreenCollectionHash = Screen.getScreens().hashCode();
 	}
 
 	/**

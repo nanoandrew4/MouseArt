@@ -97,8 +97,10 @@ public class Main extends Application {
 	}
 
 	private void setOnCloseRequestHandler(Stage primaryStage) {
+		// TODO: SHOW MESSAGE WHILE CLOSING, SO USER DOESN'T THINK APP FROZE
 		primaryStage.setOnCloseRequest(event -> {
 			if (Recorder.state == State.RECORDING) {
+				Recorder.state = State.STOPPED;
 				Recorder.createIArtDirIfNotExists();
 				recorder.saveImage(new File(iArtFolderPath + new Date().toString()));
 			}
