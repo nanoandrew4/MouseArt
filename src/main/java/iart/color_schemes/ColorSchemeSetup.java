@@ -1,6 +1,6 @@
 package iart.color_schemes;
 
-import iart.Main;
+import iart.JFXMain;
 import iart.recorder.Recorder;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
@@ -32,7 +32,7 @@ public class ColorSchemeSetup {
 
 		ClassFinder finder = new ClassFinder();
 		try {
-			finder.add(new File(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI()));
+			finder.add(new File(JFXMain.class.getProtectionDomain().getCodeSource().getLocation().toURI()));
 		} catch (URISyntaxException e) {
 			e.printStackTrace();
 		}

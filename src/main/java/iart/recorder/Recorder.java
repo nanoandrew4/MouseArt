@@ -1,7 +1,7 @@
 package iart.recorder;
 
 import iart.GlobalVariables;
-import iart.Main;
+import iart.JFXMain;
 import iart.color_schemes.ColorScheme;
 import iart.color_schemes.grayscale_scheme.GrayscaleScheme;
 import iart.draw.DrawEvent;
@@ -47,34 +47,16 @@ public class Recorder {
 	}
 
 	/**
-	 * Starts the mouse and keyboard tracking, and clears the canvas in order to draw on it.
+	 * Creates the default directory for iArt images if it does not exist.
 	 */
-	public boolean startRecording(final Main main, double resMultiplier) {
-		if (state != State.STOPPED)
-			return false;
-
-		state = State.PRE_RECORDING;
-
-		Recorder.resMultiplier = resMultiplier;
-
-		Main.resetScreenDimensions();
-		GlobalVariables.screenWidth *= resMultiplier;
-		GlobalVariables.screenHeight *= resMultiplier;
-
-		canvas = new Canvas(GlobalVariables.screenWidth, GlobalVariables.screenHeight);
-
-		GraphicsContext gc = canvas.getGraphicsContext2D();
-		gc.setFill(colorScheme.getColor(DrawEvent.BACKGROUND, null));
-		gc.fillRect(0, 0, GlobalVariables.screenWidth, GlobalVariables.screenHeight);
-
-		Drawer drawer = new Drawer(main, gc);
-
-		mouseHook = new MouseHook(drawer, GlobalVariables.screenWidth, GlobalVariables.screenHeight);
-		keyboardHook = new KeyboardHook(drawer, GlobalVariables.screenWidth, GlobalVariables.screenHeight);
-
-		state = State.RECORDING;
-
-		return true;
+	public static void createIArtDirIfNotExists() {
+		try {
+			Path path = Paths.get(JFXMain.iArtFolderPath);
+			if (!Files.exists(path))
+				Files.createDirectory(path);
+		} catch (IOException e) {
+			System.err.println("Error creating iArt folder, aborting file save...");
+		}
 	}
 
 	/**
@@ -110,6 +92,37 @@ public class Recorder {
 	}
 
 	/**
+	 * Starts the mouse and keyboard tracking, and clears the canvas in order to draw on it.
+	 */
+	public boolean startRecording(final JFXMain JFXMain, double resMultiplier) {
+		if (state != State.STOPPED)
+			return false;
+
+		state = State.PRE_RECORDING;
+
+		Recorder.resMultiplier = resMultiplier;
+
+		JFXMain.resetScreenDimensions();
+		GlobalVariables.screenWidth *= resMultiplier;
+		GlobalVariables.screenHeight *= resMultiplier;
+
+		canvas = new Canvas(GlobalVariables.screenWidth, GlobalVariables.screenHeight);
+
+		GraphicsContext gc = canvas.getGraphicsContext2D();
+		gc.setFill(colorScheme.getColor(DrawEvent.BACKGROUND, null));
+		gc.fillRect(0, 0, GlobalVariables.screenWidth, GlobalVariables.screenHeight);
+
+		Drawer drawer = new Drawer(JFXMain, gc);
+
+		mouseHook = new MouseHook(drawer, GlobalVariables.screenWidth, GlobalVariables.screenHeight);
+		keyboardHook = new KeyboardHook(drawer, GlobalVariables.screenWidth, GlobalVariables.screenHeight);
+
+		state = State.RECORDING;
+
+		return true;
+	}
+
+	/**
 	 * Prompts user (using system file chooser) for a file name and a destination for the file graphically.
 	 * Then saves image as a '.png' in the requested directory, under the requested name.
 	 *
@@ -121,11 +134,11 @@ public class Recorder {
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.getExtensionFilters().addAll(
 				new FileChooser.ExtensionFilter("PNG Files (*.png)", "*.png")
-		);
+												);
 		fileChooser.setInitialFileName(new Date().toString() + ".png");
 
 		createIArtDirIfNotExists();
-		fileChooser.setInitialDirectory(new File(Main.iArtFolderPath));
+		fileChooser.setInitialDirectory(new File(JFXMain.iArtFolderPath));
 
 		// Show system file chooser (choose file name and save destination)
 		File file = fileChooser.showSaveDialog(stage);
@@ -133,19 +146,6 @@ public class Recorder {
 		saveImage(file);
 
 		stage.setTitle("iArt");
-	}
-
-	/**
-	 * Creates the default directory for iArt images if it does not exist.
-	 */
-	public static void createIArtDirIfNotExists() {
-		try {
-			Path path = Paths.get(Main.iArtFolderPath);
-			if (!Files.exists(path))
-				Files.createDirectory(path);
-		} catch (IOException e) {
-			System.err.println("Error creating iArt folder, aborting file save...");
-		}
 	}
 
 	/**

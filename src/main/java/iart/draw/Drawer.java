@@ -1,11 +1,11 @@
 package iart.draw;
 
-import iart.Main;
+import iart.JFXMain;
 import iart.recorder.Recorder;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.shape.ArcType;
 
-import java.awt.Point;
+import java.awt.*;
 import java.awt.geom.Point2D;
 
 /**
@@ -13,7 +13,7 @@ import java.awt.geom.Point2D;
  * may be updated to reflect the latest draw operations.
  */
 public class Drawer {
-	private Main main;
+	private JFXMain JFXMain;
 
 	private GraphicsContext gc;
 	private Point2D point = new Point2D.Double();
@@ -21,11 +21,11 @@ public class Drawer {
 	/**
 	 * Sets up the drawer to be able to draw on the specified canvas.
 	 *
-	 * @param main Main class that instantiated this class
-	 * @param gc   GraphicsContext of the canvas on which to draw
+	 * @param JFXMain Main class that instantiated this class
+	 * @param gc      GraphicsContext of the canvas on which to draw
 	 */
-	public Drawer(Main main, GraphicsContext gc) {
-		this.main = main;
+	public Drawer(JFXMain JFXMain, GraphicsContext gc) {
+		this.JFXMain = JFXMain;
 		this.gc = gc;
 	}
 
@@ -50,7 +50,7 @@ public class Drawer {
 		gc.setStroke(Recorder.colorScheme.getColor(DrawEvent.MOUSE_MOVE, point));
 		gc.setLineWidth(1);
 		gc.strokeLine(start.x, start.y, end.x, end.y);
-		main.refreshPreview();
+		JFXMain.refreshPreview();
 	}
 
 	/**
@@ -74,7 +74,7 @@ public class Drawer {
 			gc.fillArc(center.x - radius / 2d, center.y - radius / 2d, radius, radius, 0, 360, ArcType.ROUND);
 		}
 
-		main.refreshPreview();
+		JFXMain.refreshPreview();
 	}
 
 	/**
@@ -91,6 +91,6 @@ public class Drawer {
 
 		gc.setStroke(Recorder.colorScheme.getColor(DrawEvent.KEYSTROKE, point));
 		gc.strokeRect(topLeft.x, topLeft.y, width, width);
-		main.refreshPreview();
+		JFXMain.refreshPreview();
 	}
 }

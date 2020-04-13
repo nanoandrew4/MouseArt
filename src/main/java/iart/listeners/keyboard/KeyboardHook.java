@@ -1,6 +1,6 @@
 package iart.listeners.keyboard;
 
-import iart.Main;
+import iart.JFXMain;
 import iart.draw.Drawer;
 import iart.recorder.Recorder;
 import iart.recorder.State;
@@ -40,7 +40,7 @@ public class KeyboardHook implements NativeKeyListener {
 
 		squareMaxWidth = (int) (Math.max(screenWidth, screenHeight) / 100);
 
-		layout = KeyboardLayout.loadKeyboardLayout(Main.keysFileLoc);
+		layout = KeyboardLayout.loadKeyboardLayout(JFXMain.keysFileLoc);
 		GlobalScreen.addNativeKeyListener(this);
 	}
 
