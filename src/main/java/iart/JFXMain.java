@@ -10,6 +10,7 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
 import javafx.scene.transform.Transform;
@@ -69,6 +70,8 @@ public class JFXMain extends Application {
 		pauseRecording = new MenuItem("Pause");
 		stopRecording = new MenuItem("Stop");
 		snapshotParameters = new SnapshotParameters();
+
+		primaryStage.getIcons().add(new Image(JFXMain.class.getResourceAsStream("/icons/icon.png")));
 
 		Logger logger = Logger.getLogger(GlobalScreen.class.getPackage().getName());
 		logger.setLevel(Level.OFF);
