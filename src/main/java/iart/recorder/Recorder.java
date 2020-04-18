@@ -94,7 +94,7 @@ public class Recorder {
 	/**
 	 * Starts the mouse and keyboard tracking, and clears the canvas in order to draw on it.
 	 */
-	public boolean startRecording(final JFXMain JFXMain, double resMultiplier) {
+	public boolean startRecording(final JFXMain jFXMain, double resMultiplier) {
 		if (state != State.STOPPED)
 			return false;
 
@@ -103,8 +103,7 @@ public class Recorder {
 		Recorder.resMultiplier = resMultiplier;
 
 		JFXMain.resetScreenDimensions();
-		GlobalVariables.screenWidth *= resMultiplier;
-		GlobalVariables.screenHeight *= resMultiplier;
+		JFXMain.applyResolutionMultiplierToScreenDimensions();
 
 		canvas = new Canvas(GlobalVariables.screenWidth, GlobalVariables.screenHeight);
 
@@ -112,7 +111,7 @@ public class Recorder {
 		gc.setFill(colorScheme.getColor(DrawEvent.BACKGROUND, null));
 		gc.fillRect(0, 0, GlobalVariables.screenWidth, GlobalVariables.screenHeight);
 
-		Drawer drawer = new Drawer(JFXMain, gc);
+		Drawer drawer = new Drawer(jFXMain, gc);
 
 		mouseHook = new MouseHook(drawer, GlobalVariables.screenWidth, GlobalVariables.screenHeight);
 		keyboardHook = new KeyboardHook(drawer, GlobalVariables.screenWidth, GlobalVariables.screenHeight);

@@ -55,11 +55,18 @@ public class JFXMain extends Application {
 	}
 
 	public static void resetScreenDimensions() {
+		GlobalVariables.screenWidth = 0;
+		GlobalVariables.screenHeight = 0;
 		// Get screen sizes, supports multiple monitors
 		for (int s = 0; s < Screen.getScreens().size(); s++) {
 			GlobalVariables.screenWidth = Math.max(GlobalVariables.screenWidth, (int) Screen.getScreens().get(s).getBounds().getMaxX());
 			GlobalVariables.screenHeight = Math.max(GlobalVariables.screenHeight, (int) Screen.getScreens().get(s).getBounds().getMaxY());
 		}
+	}
+
+	public static void applyResolutionMultiplierToScreenDimensions() {
+		GlobalVariables.screenWidth *= Recorder.resMultiplier;
+		GlobalVariables.screenHeight *= Recorder.resMultiplier;
 	}
 
 	@Override

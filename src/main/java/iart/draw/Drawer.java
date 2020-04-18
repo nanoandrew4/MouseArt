@@ -43,6 +43,8 @@ public class Drawer {
 	 * @param end   Line end coordinate
 	 */
 	public void drawLine(Point start, Point end) {
+		start = (Point) start.clone();
+		end = (Point) end.clone();
 		scaleDrawPoints(start, end);
 
 		point.setLocation(start);
@@ -61,6 +63,7 @@ public class Drawer {
 	 * @param radius    Radius of the circle
 	 */
 	public void drawCircle(DrawEvent drawEvent, Point center, double radius) {
+		center = (Point) center.clone();
 		scaleDrawPoints(center);
 		radius *= Recorder.resMultiplier;
 
@@ -84,6 +87,7 @@ public class Drawer {
 	 * @param width   Width of the square (of one of the sides)
 	 */
 	public void drawSquare(Point topLeft, double width) {
+		topLeft = (Point) topLeft.clone();
 		scaleDrawPoints(topLeft);
 		width *= Recorder.resMultiplier;
 
