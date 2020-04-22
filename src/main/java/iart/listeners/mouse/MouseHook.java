@@ -3,9 +3,9 @@ package iart.listeners.mouse;
 import iart.GlobalVariables;
 import iart.draw.DrawEvent;
 import iart.draw.Drawer;
+import iart.multimonitor.transformers.ScreenCoordinateTransformer;
 import iart.recorder.Recorder;
 import iart.recorder.State;
-import iart.transformers.ScreenCoordinateTransformer;
 import javafx.application.Platform;
 import javafx.geometry.Rectangle2D;
 import javafx.stage.Screen;
@@ -67,7 +67,7 @@ public class MouseHook implements NativeMouseInputListener {
 	 * @return Radius to use when drawing the mouse move circle
 	 */
 	private static double getMouseMoveRadius(double diffSecs) {
-		return ((GlobalVariables.screenWidth > GlobalVariables.screenHeight ? GlobalVariables.screenHeight : GlobalVariables.screenHeight) / 4d) /
+		return ((Math.min(GlobalVariables.getVirtualScreenWidth(), GlobalVariables.getVirtualScreenHeight())) / 4d) /
 			   (1d + 35d * Math.exp(-0.001d * diffSecs)) - 15d;
 	}
 

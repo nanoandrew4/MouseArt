@@ -1,0 +1,5 @@
+.menu-item:focused {
+     -fx-background-color: #4169e1;
+     -fx-background-radius: 10;
+     -fx-border-radius: 10;
+}

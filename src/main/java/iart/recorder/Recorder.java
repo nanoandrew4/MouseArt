@@ -38,7 +38,6 @@ public class Recorder {
 
 	public static State state = State.STOPPED;
 	public static ColorScheme colorScheme = new GrayscaleScheme();
-	public static double resMultiplier = 1d;
 
 	private Canvas canvas;
 
@@ -94,31 +93,23 @@ public class Recorder {
 	/**
 	 * Starts the mouse and keyboard tracking, and clears the canvas in order to draw on it.
 	 */
-	public boolean startRecording(final JFXMain jFXMain, double resMultiplier) {
-		if (state != State.STOPPED)
-			return false;
-
+	public void startRecording(final JFXMain jFXMain) {
 		state = State.PRE_RECORDING;
 
-		Recorder.resMultiplier = resMultiplier;
-
 		JFXMain.resetScreenDimensions();
-		JFXMain.applyResolutionMultiplierToScreenDimensions();
 
-		canvas = new Canvas(GlobalVariables.screenWidth, GlobalVariables.screenHeight);
+		canvas = new Canvas(GlobalVariables.getVirtualScreenWidth(), GlobalVariables.getVirtualScreenHeight());
 
 		GraphicsContext gc = canvas.getGraphicsContext2D();
 		gc.setFill(colorScheme.getColor(DrawEvent.BACKGROUND, null));
-		gc.fillRect(0, 0, GlobalVariables.screenWidth, GlobalVariables.screenHeight);
+		gc.fillRect(0, 0, GlobalVariables.getVirtualScreenWidth(), GlobalVariables.getVirtualScreenHeight());
 
 		Drawer drawer = new Drawer(jFXMain, gc);
 
-		mouseHook = new MouseHook(drawer, GlobalVariables.screenWidth, GlobalVariables.screenHeight);
-		keyboardHook = new KeyboardHook(drawer, GlobalVariables.screenWidth, GlobalVariables.screenHeight);
+		mouseHook = new MouseHook(drawer, GlobalVariables.getVirtualScreenWidth(), GlobalVariables.getVirtualScreenHeight());
+		keyboardHook = new KeyboardHook(drawer, GlobalVariables.getVirtualScreenWidth(), GlobalVariables.getVirtualScreenHeight());
 
 		state = State.RECORDING;
-
-		return true;
 	}
 
 	/**

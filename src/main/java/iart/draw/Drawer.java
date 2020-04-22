@@ -1,5 +1,6 @@
 package iart.draw;
 
+import iart.GlobalVariables;
 import iart.JFXMain;
 import iart.recorder.Recorder;
 import javafx.scene.canvas.GraphicsContext;
@@ -31,8 +32,8 @@ public class Drawer {
 
 	private void scaleDrawPoints(Point... ps) {
 		for (Point p : ps) {
-			p.x *= Recorder.resMultiplier;
-			p.y *= Recorder.resMultiplier;
+			p.x *= GlobalVariables.getResMultiplier();
+			p.y *= GlobalVariables.getResMultiplier();
 		}
 	}
 
@@ -65,7 +66,7 @@ public class Drawer {
 	public void drawCircle(DrawEvent drawEvent, Point center, double radius) {
 		center = (Point) center.clone();
 		scaleDrawPoints(center);
-		radius *= Recorder.resMultiplier;
+		radius *= GlobalVariables.getResMultiplier();
 
 		point.setLocation(center);
 
@@ -89,7 +90,7 @@ public class Drawer {
 	public void drawSquare(Point topLeft, double width) {
 		topLeft = (Point) topLeft.clone();
 		scaleDrawPoints(topLeft);
-		width *= Recorder.resMultiplier;
+		width *= GlobalVariables.getResMultiplier();
 
 		point.setLocation(topLeft);
 

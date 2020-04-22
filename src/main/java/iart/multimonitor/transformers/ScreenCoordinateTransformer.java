@@ -1,7 +1,6 @@
-package iart.transformers;
+package iart.multimonitor.transformers;
 
 import iart.GlobalVariables;
-import iart.JFXMain;
 import javafx.geometry.Rectangle2D;
 import javafx.util.Pair;
 
@@ -15,18 +14,12 @@ public class ScreenCoordinateTransformer {
 
 	private static ScreenCoordinateTransformer instance;
 
-	private static List<Screen> screens;
+	private List<Screen> screens;
 
 	private ScreenCoordinateTransformer() {
-		// Reset screen dimensions so transformations can be calculated for real dimensions, not scaled ones
-		JFXMain.resetScreenDimensions();
-
 		screens = Screen.generateScreens();
 
 		calculateTransformedBounds(findScreenSidesWithoutNeighbours());
-
-		// Reapply resolution multiplier after transformations are calculated
-		JFXMain.applyResolutionMultiplierToScreenDimensions();
 	}
 
 	public static void createNewInstance() {
@@ -37,6 +30,10 @@ public class ScreenCoordinateTransformer {
 		if (instance == null)
 			instance = new ScreenCoordinateTransformer();
 		return instance;
+	}
+
+	public List<Screen> getScreens() {
+		return screens;
 	}
 
 	public void transformPoint(Point p) {

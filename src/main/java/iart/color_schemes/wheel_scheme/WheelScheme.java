@@ -35,7 +35,7 @@ public class WheelScheme implements ColorScheme {
 			case MOUSE_MOVE:
 			case KEYSTROKE:
 			case LMOUSE_PRESS:
-				Point centrePoint = new Point((int) GlobalVariables.screenWidth / 2, (int) GlobalVariables.screenHeight / 2);
+				Point centrePoint = new Point((int) GlobalVariables.getVirtualScreenWidth() / 2, (int) GlobalVariables.getVirtualScreenHeight() / 2);
 
 				double angleRad = Math.atan((centrePoint.getY() - eventLoc.getY()) / (eventLoc.getX() -
 																					  centrePoint.getX()));
@@ -80,13 +80,13 @@ public class WheelScheme implements ColorScheme {
 	 */
 	private Color getSchemeColor(DrawEvent drawEvent, double angle, double distToBorderRatio, double distFromCentre) {
 		return Color.hsb(
-				grayscale ? 0 : ((angle + ((System.currentTimeMillis() - startTime) / 60000)
+				grayscale ? 0 : ((angle + ((System.currentTimeMillis() - startTime) / 60000d)
 								  + (drawEvent == DrawEvent.MOUSE_MOVE ? 0 : 30)) % 360),
 				grayscale ? 0 : (inverted ? 1 - distToBorderRatio : distToBorderRatio),
 				grayscale ? (inverted ? (1 - ((1 - distToBorderRatio) / 2)) : (1 - distToBorderRatio) / 2)
 						  : 1,
 				drawEvent == DrawEvent.LMOUSE_PRESS ? getOpacity(distFromCentre) : 1
-		);
+						);
 	}
 
 	@Override
@@ -106,7 +106,7 @@ public class WheelScheme implements ColorScheme {
 	 * @return Value between 0.33-1
 	 */
 	private double getOpacity(double distFromCentre) {
-		return 1 / (1d + 2 * Math.exp((-1 / (GlobalVariables.screenHeight / 2d)) * distFromCentre));
+		return 1 / (1d + 2 * Math.exp((-1 / (GlobalVariables.getVirtualScreenHeight() / 2d)) * distFromCentre));
 	}
 
 	/**
@@ -125,13 +125,13 @@ public class WheelScheme implements ColorScheme {
 		double slope = dy / dx;
 		double borderX, borderY;
 
-		double diagScreenSlope = GlobalVariables.screenHeight / (double) GlobalVariables.screenWidth;
+		double diagScreenSlope = GlobalVariables.getVirtualScreenWidth() / GlobalVariables.getVirtualScreenHeight();
 
 		if (slope > diagScreenSlope || slope < -diagScreenSlope) {
-			borderX = ((GlobalVariables.screenHeight / 2d) * (py > 0 ? 1 : -1) - dy) / slope + dx;
+			borderX = ((GlobalVariables.getVirtualScreenWidth() / 2d) * (py > 0 ? 1 : -1) - dy) / slope + dx;
 			borderY = (borderX * dy) / dx;
 		} else {
-			borderY = slope * ((GlobalVariables.screenWidth / 2d) * (px > 0 ? 1 : -1) - dx) + dy;
+			borderY = slope * ((GlobalVariables.getVirtualScreenWidth() / 2d) * (px > 0 ? 1 : -1) - dx) + dy;
 			borderX = (borderY * dx) / dy;
 		}
 

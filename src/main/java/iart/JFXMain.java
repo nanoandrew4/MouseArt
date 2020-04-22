@@ -2,6 +2,7 @@ package iart;
 
 import iart.color_schemes.ColorSchemeSetup;
 import iart.listeners.keyboard.KeyboardLayoutUI;
+import iart.multimonitor.MultiMonitorSettings;
 import iart.recorder.Recorder;
 import iart.recorder.State;
 import javafx.application.Application;
@@ -64,11 +65,6 @@ public class JFXMain extends Application {
 		}
 	}
 
-	public static void applyResolutionMultiplierToScreenDimensions() {
-		GlobalVariables.screenWidth *= Recorder.resMultiplier;
-		GlobalVariables.screenHeight *= Recorder.resMultiplier;
-	}
-
 	@Override
 	public void start(Stage primaryStage) {
 		resMultiplierSpinner = new Spinner<>(1d, 16d, 1d, 0.1);
@@ -96,6 +92,8 @@ public class JFXMain extends Application {
 		sceneHeight = (int) (GlobalVariables.screenHeight * .25d);
 
 		previewScene = new Scene(previewGroup = new Group(), sceneWidth, sceneHeight);
+
+		previewScene.getStylesheets().add(JFXMain.class.getResource("/styles/styles.css").toExternalForm());
 
 		setupMenuBar(primaryStage);
 
@@ -139,13 +137,39 @@ public class JFXMain extends Application {
 				menuBar.setOpacity(.2);
 		});
 
-		Menu fileMenu = new Menu("File");
+		Menu fileMenu = createActionMenu(primaryStage);
+
+		resMultiplierSpinner.setEditable(true);
+		Menu resSpinnerMenu = new Menu("Resolution Multiplier", null, new CustomMenuItem(resMultiplierSpinner, false));
+
+		Menu multiMonitorMenu = new Menu("Multi-Monitor Support");
+		RadioMenuItem multiMonitorTranslateMousePos = new RadioMenuItem("Correct cursor transition");
+		MenuItem multiMonitorSettings = new MenuItem("Settings...");
+		multiMonitorSettings.setOnAction(actionEvent -> {
+			MultiMonitorSettings.showSettingsWindow(primaryStage);
+		});
+
+		multiMonitorMenu.getItems().addAll(multiMonitorTranslateMousePos, new SeparatorMenuItem(), multiMonitorSettings);
+
+		// Setup menu bar
+		menuBar.getMenus().addAll(fileMenu, resSpinnerMenu);
+		ColorSchemeSetup.setupColorSchemes(menuBar);
+		menuBar.getMenus().add(multiMonitorMenu);
+
+		previewGroup.getChildren().addAll(menuBar);
+	}
+
+	private Menu createActionMenu(Stage primaryStage) {
+		Menu fileMenu = new Menu("Actions");
 
 		MenuItem resetKeyboardLayout = new MenuItem("Reset keyboard layout");
 		resetKeyboardLayout.setOnAction(event -> new KeyboardLayoutUI(primaryStage));
 
 		startRecording.setOnAction(event -> {
-			if (recorder.startRecording(this, Math.sqrt(resMultiplierSpinner.getValue()))) {
+			if (Recorder.state == State.STOPPED) {
+				resMultiplierSpinner.setDisable(true);
+				GlobalVariables.setResMultiplier(resMultiplierSpinner.getValue());
+				recorder.startRecording(this);
 				menuBar.setOpacity(0.5);
 				previewScene.setRoot(previewGroup = new Group(geomPreview, menuBar));
 				updateSnapshotParams();
@@ -156,22 +180,14 @@ public class JFXMain extends Application {
 		pauseRecording.setOnAction(event -> recorder.pauseRecording(pauseRecording));
 
 		stopRecording.setOnAction(event -> {
-			if (recorder.stopRecording(primaryStage))
+			if (recorder.stopRecording(primaryStage)) {
 				menuBar.setOpacity(1);
+				resMultiplierSpinner.setDisable(false);
+			}
 		});
 
-		fileMenu.getItems().addAll(resetKeyboardLayout, new SeparatorMenuItem(), startRecording, pauseRecording,
-								   stopRecording);
-
-		resMultiplierSpinner.setEditable(true);
-
-		Menu resSpinnerMenu = new Menu("Resolution Multiplier", null, new CustomMenuItem(resMultiplierSpinner, false));
-
-		// Setup menu bar
-		menuBar.getMenus().addAll(fileMenu, resSpinnerMenu);
-		ColorSchemeSetup.setupColorSchemes(menuBar);
-
-		previewGroup.getChildren().addAll(menuBar);
+		fileMenu.getItems().addAll(resetKeyboardLayout, new SeparatorMenuItem(), startRecording, pauseRecording, stopRecording);
+		return fileMenu;
 	}
 
 	/**
@@ -229,7 +245,7 @@ public class JFXMain extends Application {
 	 */
 	private void updateSnapshotParams() {
 		snapshotParameters.setTransform(
-				Transform.scale(sceneWidth / GlobalVariables.screenWidth, sceneHeight / GlobalVariables.screenHeight)
+				Transform.scale(sceneWidth / GlobalVariables.getVirtualScreenWidth(), sceneHeight / GlobalVariables.getVirtualScreenHeight())
 									   );
 	}
 }

@@ -35,26 +35,26 @@ public class FallScheme implements ColorScheme, NativeMouseWheelListener {
 
 	@Override
 	public Color getColor(DrawEvent drawEvent, Point2D eventLoc) {
-		double locToEdegeRatio = 0d;
+		double locToEdgeRatio = 0d;
 		if (eventLoc != null)
-			locToEdegeRatio = vertical ? eventLoc.getY() / GlobalVariables.screenHeight : eventLoc.getX() / GlobalVariables.screenWidth;
+			locToEdgeRatio = vertical ? eventLoc.getY() / GlobalVariables.getVirtualScreenHeight() : eventLoc.getX() / GlobalVariables.getVirtualScreenWidth();
 		switch (drawEvent) {
 			case MOUSE_MOVE:
 				return Color.hsb(grayscale ? 0d : currHue,
-								 grayscale ? 0d : 1d - locToEdegeRatio,
-								 grayscale ? locToEdegeRatio : 1d,
+								 grayscale ? 0d : 1d - locToEdgeRatio,
+								 grayscale ? locToEdgeRatio : 1d,
 								 1
 								);
 			case KEYSTROKE:
 				return Color.hsb(grayscale ? 0d : currHue,
-								 grayscale ? 0d : Math.min(1d - locToEdegeRatio + (Math.random() / 10d), 1d),
-								 grayscale ? Math.min(locToEdegeRatio + (Math.random() / 10d), 1d) : 1d,
+								 grayscale ? 0d : Math.min(1d - locToEdgeRatio + (Math.random() / 10d), 1d),
+								 grayscale ? Math.min(locToEdgeRatio + (Math.random() / 10d), 1d) : 1d,
 								 Math.random()
 								);
 			case LMOUSE_PRESS:
 				return Color.hsb(grayscale ? 0d : currHue,
-								 grayscale ? 0d : Math.max(1d - locToEdegeRatio - (Math.random() / 10d), 0d),
-								 grayscale ? Math.max(locToEdegeRatio - (Math.random() / 10d), 0d) : 1d,
+								 grayscale ? 0d : Math.max(1d - locToEdgeRatio - (Math.random() / 10d), 0d),
+								 grayscale ? Math.max(locToEdgeRatio - (Math.random() / 10d), 0d) : 1d,
 								 Math.random()
 								);
 			case MOVE_OUTER_CIRCLE:

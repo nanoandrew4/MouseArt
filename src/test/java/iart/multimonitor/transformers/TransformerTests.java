@@ -1,4 +1,4 @@
-package iart.transformers;
+package iart.multimonitor.transformers;
 
 import iart.GlobalVariables;
 import javafx.geometry.Rectangle2D;

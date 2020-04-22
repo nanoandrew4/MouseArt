@@ -2,10 +2,7 @@ package iart.color_schemes;
 
 import iart.JFXMain;
 import iart.recorder.Recorder;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuBar;
-import javafx.scene.control.RadioMenuItem;
-import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.*;
 import org.clapper.util.classutil.*;
 
 import java.io.File;
@@ -53,6 +50,12 @@ public class ColorSchemeSetup {
 		for (String superScheme : ColorScheme.topLevelSchemes)
 			setupScheme(colorSchemeMenu, tGroup, superScheme);
 
+		MenuItem colorSchemeSettings = new MenuItem("Settings...");
+		colorSchemeSettings.setOnAction(actionEvent -> {
+
+		});
+
+		colorSchemeMenu.getItems().addAll(new SeparatorMenuItem(), colorSchemeSettings);
 		menuBar.getMenus().add(1, colorSchemeMenu);
 	}
 
@@ -74,13 +77,13 @@ public class ColorSchemeSetup {
 				if (subSchemes == null)
 					ColorScheme.colorSchemes.put(
 							scheme, (ColorScheme) Class.forName("iart.color_schemes." + scheme + "Scheme")
-													   .getConstructor().newInstance()
-					);
-				else // if (subSchemes.size() == 1)
+									.getConstructor().newInstance()
+												);
+				else
 					ColorScheme.colorSchemes.putIfAbsent(
 							scheme, (ColorScheme) Class.forName("iart.color_schemes." + subSchemes.get(0) + "Scheme")
-													   .getConstructor().newInstance()
-					);
+									.getConstructor().newInstance()
+														);
 
 				String[] schemeDisplayName = scheme.split("\\.");
 				RadioMenuItem schemeItem = new RadioMenuItem(schemeDisplayName[schemeDisplayName.length - 1]);

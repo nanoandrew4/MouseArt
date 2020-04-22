@@ -1,4 +1,4 @@
-package iart.transformers;
+package iart.multimonitor.transformers;
 
 import java.awt.*;
 import java.util.function.Function;
