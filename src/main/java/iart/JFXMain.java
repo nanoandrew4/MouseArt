@@ -88,8 +88,8 @@ public class JFXMain extends Application {
 
 		resetScreenDimensions();
 
-		sceneWidth = (int) (GlobalVariables.screenWidth * .25d);
-		sceneHeight = (int) (GlobalVariables.screenHeight * .25d);
+		sceneWidth = (int) (GlobalVariables.screenWidth * .4d);
+		sceneHeight = (int) (GlobalVariables.screenHeight * .4d);
 
 		previewScene = new Scene(previewGroup = new Group(), sceneWidth, sceneHeight);
 

@@ -12,8 +12,8 @@ public class GlobalVariables {
 
 	public static void setResMultiplier(double resMultiplier) {
 		GlobalVariables.resMultiplier = Math.sqrt(resMultiplier);
-		virtualScreenWidth = screenWidth * resMultiplier;
-		virtualScreenHeight = screenHeight * resMultiplier;
+		virtualScreenWidth = screenWidth * GlobalVariables.resMultiplier;
+		virtualScreenHeight = screenHeight * GlobalVariables.resMultiplier;
 	}
 
 	public static double getVirtualScreenWidth() {
