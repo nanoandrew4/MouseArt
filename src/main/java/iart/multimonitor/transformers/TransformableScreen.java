@@ -2,36 +2,51 @@ package iart.multimonitor.transformers;
 
 import javafx.geometry.Rectangle2D;
 
+import java.awt.*;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class Screen {
+public class TransformableScreen {
+	private static List<TransformableScreen> transformableScreens;
+
 	private final TransformerFunctionPair transformerFunctionPair;
 	private Rectangle2D realBounds;
 	private Rectangle2D transformedBounds;
 
-	private Screen() {
+	private TransformableScreen() {
 		transformerFunctionPair = new TransformerFunctionPair();
 	}
 
-	public Screen(javafx.stage.Screen screen) {
+	public TransformableScreen(javafx.stage.Screen screen) {
 		this(screen.getBounds());
 	}
 
-	public Screen(Rectangle2D bounds) {
+	public TransformableScreen(Rectangle2D bounds) {
 		this(bounds, bounds);
 	}
 
-	public Screen(Rectangle2D realBounds, Rectangle2D transformedBounds) {
+	public TransformableScreen(Rectangle2D realBounds, Rectangle2D transformedBounds) {
 		this();
 		this.realBounds = realBounds;
 		this.transformedBounds = transformedBounds;
 	}
 
-	public static List<Screen> generateScreens() {
-		return javafx.stage.Screen.getScreens().stream().map(Screen::new).collect(Collectors.toList());
+	public static void generateScreens() {
+		transformableScreens = javafx.stage.Screen.getScreens().stream().map(TransformableScreen::new).collect(Collectors.toList());
+	}
+
+	public static List<TransformableScreen> getTransformableScreens() {
+		return transformableScreens;
+	}
+
+	public static TransformableScreen getScreenForTransformedPoint(Point p) {
+		return transformableScreens.stream().filter(screen -> screen.getTransformedBounds().contains(p.x, p.y)).findFirst().orElse(null);
+	}
+
+	public static void transformPoint(Point p) {
+		transformableScreens.stream().filter(screen -> screen.getRealBounds().contains(p.x, p.y)).findFirst().ifPresent(screen -> screen.getTransformer().transform(p));
 	}
 
 	public void setTransformedBoundsMinX(double minX) {
@@ -80,49 +95,49 @@ public class Screen {
 		this.transformedBounds = transformedBounds;
 	}
 
-	protected boolean hasNeighbourDirectlyOnRightSide(Rectangle2D potentialNeighbourBounds) {
+	public boolean isNeighbouringDirectlyOnRightSide(Rectangle2D potentialNeighbourBounds) {
 		return this.realBounds.getMaxX() == potentialNeighbourBounds.getMinX() &&
 			   ((this.realBounds.getMinY() < potentialNeighbourBounds.getMaxY() && this.realBounds.getMinY() >= potentialNeighbourBounds.getMinY()) ||
 				(this.realBounds.getMaxY() > potentialNeighbourBounds.getMinY() && this.realBounds.getMaxY() < potentialNeighbourBounds.getMaxY())); // TODO: POSSIBLE REFACTOR, LAST TWO LINES ARE THE SAME
 	}
 
-	protected boolean hasNeighbourOnRightSide(Rectangle2D potentialNeighbourBounds) {
+	public boolean isNeighbouringOnRightSide(Rectangle2D potentialNeighbourBounds) {
 		return this.realBounds.getMaxX() < potentialNeighbourBounds.getMinX() &&
 			   ((this.realBounds.getMinY() < potentialNeighbourBounds.getMaxY() && this.realBounds.getMinY() >= potentialNeighbourBounds.getMinY()) ||
 				(this.realBounds.getMaxY() > potentialNeighbourBounds.getMinY() && this.realBounds.getMaxY() < potentialNeighbourBounds.getMaxY())); // TODO: POSSIBLE REFACTOR, LAST TWO LINES ARE THE SAME
 	}
 
-	protected boolean hasNeighbourDirectlyOnLeftSide(Rectangle2D potentialNeighbourBounds) {
+	public boolean isNeighbouringDirectlyOnLeftSide(Rectangle2D potentialNeighbourBounds) {
 		return this.realBounds.getMinX() == potentialNeighbourBounds.getMaxX() &&
 			   ((this.realBounds.getMinY() < potentialNeighbourBounds.getMaxY() && this.realBounds.getMinY() >= potentialNeighbourBounds.getMinY()) ||
 				(this.realBounds.getMaxY() > potentialNeighbourBounds.getMinY() && this.realBounds.getMaxY() < potentialNeighbourBounds.getMaxY()));
 	}
 
-	protected boolean hasNeighbourOnLeftSide(Rectangle2D potentialNeighbourBounds) {
+	public boolean isNeighbouringOnLeftSide(Rectangle2D potentialNeighbourBounds) {
 		return this.realBounds.getMinX() > potentialNeighbourBounds.getMaxX() &&
 			   ((this.realBounds.getMinY() < potentialNeighbourBounds.getMaxY() && this.realBounds.getMinY() >= potentialNeighbourBounds.getMinY()) ||
 				(this.realBounds.getMaxY() > potentialNeighbourBounds.getMinY() && this.realBounds.getMaxY() < potentialNeighbourBounds.getMaxY()));
 	}
 
-	protected boolean hasNeighbourDirectlyOnTopSide(Rectangle2D potentialNeighbourBounds) {
+	public boolean isNeighbouringDirectlyOnTopSide(Rectangle2D potentialNeighbourBounds) {
 		return this.realBounds.getMinY() == potentialNeighbourBounds.getMaxY() &&
 			   ((this.realBounds.getMinX() < potentialNeighbourBounds.getMaxX() && this.realBounds.getMinX() >= potentialNeighbourBounds.getMinX()) ||
 				(this.realBounds.getMaxX() > potentialNeighbourBounds.getMinX() && this.realBounds.getMaxX() < potentialNeighbourBounds.getMaxX())); // TODO: POSSIBLE REFACTOR, LAST TWO LINES ARE THE SAME
 	}
 
-	protected boolean hasNeighbourOnTopSide(Rectangle2D potentialNeighbourBounds) {
+	public boolean isNeighbouringOnTopSide(Rectangle2D potentialNeighbourBounds) {
 		return this.realBounds.getMinY() > potentialNeighbourBounds.getMaxY() &&
 			   ((this.realBounds.getMinX() < potentialNeighbourBounds.getMaxX() && this.realBounds.getMinX() >= potentialNeighbourBounds.getMinX()) ||
 				(this.realBounds.getMaxX() > potentialNeighbourBounds.getMinX() && this.realBounds.getMaxX() < potentialNeighbourBounds.getMaxX())); // TODO: POSSIBLE REFACTOR, LAST TWO LINES ARE THE SAME
 	}
 
-	protected boolean hasNeighbourDirectlyOnBottomSide(Rectangle2D potentialNeighbourBounds) {
+	public boolean isNeighbouringDirectlyOnBottomSide(Rectangle2D potentialNeighbourBounds) {
 		return this.realBounds.getMaxY() == potentialNeighbourBounds.getMinY() &&
 			   ((this.realBounds.getMinX() < potentialNeighbourBounds.getMaxX() && this.realBounds.getMinX() >= potentialNeighbourBounds.getMinX()) ||
 				(this.realBounds.getMaxX() > potentialNeighbourBounds.getMinX() && this.realBounds.getMaxX() < potentialNeighbourBounds.getMaxX())); // TODO: POSSIBLE REFACTOR, LAST TWO LINES ARE THE SAME
 	}
 
-	protected boolean hasNeighbourOnBottomSide(Rectangle2D potentialNeighbourBounds) {
+	public boolean isNeighbouringOnBottomSide(Rectangle2D potentialNeighbourBounds) {
 		return this.realBounds.getMaxY() < potentialNeighbourBounds.getMinY() &&
 			   ((this.realBounds.getMinX() < potentialNeighbourBounds.getMaxX() && this.realBounds.getMinX() >= potentialNeighbourBounds.getMinX()) ||
 				(this.realBounds.getMaxX() > potentialNeighbourBounds.getMinX() && this.realBounds.getMaxX() < potentialNeighbourBounds.getMaxX())); // TODO: POSSIBLE REFACTOR, LAST TWO LINES ARE THE SAME
@@ -134,8 +149,8 @@ public class Screen {
 			return true;
 		if (o == null || getClass() != o.getClass())
 			return false;
-		Screen screen = (Screen) o;
-		return realBounds.equals(screen.realBounds) && transformedBounds.equals(screen.transformedBounds);
+		TransformableScreen transformableScreen = (TransformableScreen) o;
+		return realBounds.equals(transformableScreen.realBounds) && transformedBounds.equals(transformableScreen.transformedBounds);
 	}
 
 	@Override

@@ -36,7 +36,6 @@ public class Recorder {
 	private MouseHook mouseHook;
 	private KeyboardHook keyboardHook;
 
-	public static State state = State.STOPPED;
 	public static ColorScheme colorScheme = new GrayscaleScheme();
 
 	private Canvas canvas;
@@ -62,11 +61,11 @@ public class Recorder {
 	 * Pauses the drawing of the mouse movements and keystrokes. Mouse and keyboard tracking is still active.
 	 */
 	public void pauseRecording(MenuItem pauseRecording) {
-		if (state == State.RECORDING) {
-			state = State.PAUSED;
+		if (RecorderState.isRecording()) {
+			RecorderState.setState(RecorderState.PAUSED);
 			pauseRecording.setText("Resume");
-		} else if (state == State.PAUSED) {
-			state = State.RECORDING;
+		} else if (RecorderState.isPaused()) {
+			RecorderState.setState(RecorderState.RECORDING);
 			pauseRecording.setText("Pause");
 		}
 	}
@@ -77,9 +76,9 @@ public class Recorder {
 	 * @param stage Stage which contains the canvas that was being drawn to, so that it can be saved as an image
 	 */
 	public boolean stopRecording(final Stage stage) {
-		if (state == State.STOPPED)
+		if (RecorderState.isStopped())
 			return false;
-		state = State.STOPPED;
+		RecorderState.setState(RecorderState.STOPPED);
 
 		GlobalScreen.removeNativeMouseMotionListener(mouseHook);
 		GlobalScreen.removeNativeMouseListener(mouseHook);
@@ -94,7 +93,7 @@ public class Recorder {
 	 * Starts the mouse and keyboard tracking, and clears the canvas in order to draw on it.
 	 */
 	public void startRecording(final JFXMain jFXMain) {
-		state = State.PRE_RECORDING;
+		RecorderState.setState(RecorderState.PRE_RECORDING);
 
 		JFXMain.resetScreenDimensions();
 
@@ -109,7 +108,7 @@ public class Recorder {
 		mouseHook = new MouseHook(drawer, GlobalVariables.getVirtualScreenWidth(), GlobalVariables.getVirtualScreenHeight());
 		keyboardHook = new KeyboardHook(drawer, GlobalVariables.getVirtualScreenWidth(), GlobalVariables.getVirtualScreenHeight());
 
-		state = State.RECORDING;
+		RecorderState.setState(RecorderState.RECORDING);
 	}
 
 	/**

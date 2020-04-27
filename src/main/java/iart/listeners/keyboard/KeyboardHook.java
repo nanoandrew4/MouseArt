@@ -2,8 +2,7 @@ package iart.listeners.keyboard;
 
 import iart.JFXMain;
 import iart.draw.Drawer;
-import iart.recorder.Recorder;
-import iart.recorder.State;
+import iart.recorder.RecorderState;
 import javafx.application.Platform;
 import org.jnativehook.GlobalScreen;
 import org.jnativehook.keyboard.NativeKeyEvent;
@@ -46,7 +45,7 @@ public class KeyboardHook implements NativeKeyListener {
 
 	@Override
 	public void nativeKeyPressed(NativeKeyEvent nativeKeyEvent) {
-		if (Recorder.state == State.RECORDING) {
+		if (RecorderState.isRecording()) {
 			Point keyPos = layout.getLayout().get(nativeKeyEvent.getKeyCode());
 
 			if (keyPos != null) {

@@ -4,7 +4,7 @@ import iart.color_schemes.ColorSchemeSetup;
 import iart.listeners.keyboard.KeyboardLayoutUI;
 import iart.multimonitor.MultiMonitorSettings;
 import iart.recorder.Recorder;
-import iart.recorder.State;
+import iart.recorder.RecorderState;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Group;
@@ -111,8 +111,8 @@ public class JFXMain extends Application {
 	private void setOnCloseRequestHandler(Stage primaryStage) {
 		// TODO: SHOW MESSAGE WHILE CLOSING, SO USER DOESN'T THINK APP FROZE
 		primaryStage.setOnCloseRequest(event -> {
-			if (Recorder.state == State.RECORDING) {
-				Recorder.state = State.STOPPED;
+			if (RecorderState.isRecording()) {
+				RecorderState.setState(RecorderState.STOPPED);
 				Recorder.createIArtDirIfNotExists();
 				recorder.saveImage(new File(iArtFolderPath + new Date().toString()));
 			}
@@ -129,11 +129,11 @@ public class JFXMain extends Application {
 	private void setupMenuBar(Stage primaryStage) {
 		menuBar.prefWidthProperty().bind(primaryStage.widthProperty());
 		menuBar.setOnMouseEntered(event -> {
-			if (Recorder.state == State.RECORDING)
+			if (RecorderState.isRecording())
 				menuBar.setOpacity(1);
 		});
 		menuBar.setOnMouseExited(event -> {
-			if (Recorder.state == State.RECORDING)
+			if (RecorderState.isRecording())
 				menuBar.setOpacity(.2);
 		});
 
@@ -144,6 +144,7 @@ public class JFXMain extends Application {
 
 		Menu multiMonitorMenu = new Menu("Multi-Monitor Support");
 		RadioMenuItem multiMonitorTranslateMousePos = new RadioMenuItem("Correct cursor transition");
+		multiMonitorTranslateMousePos.setOnAction(actionEvent -> GlobalVariables.transformMousePosition = !GlobalVariables.transformMousePosition);
 		MenuItem multiMonitorSettings = new MenuItem("Settings...");
 		multiMonitorSettings.setOnAction(actionEvent -> {
 			MultiMonitorSettings.showSettingsWindow(primaryStage);
@@ -166,7 +167,10 @@ public class JFXMain extends Application {
 		resetKeyboardLayout.setOnAction(event -> new KeyboardLayoutUI(primaryStage));
 
 		startRecording.setOnAction(event -> {
-			if (Recorder.state == State.STOPPED) {
+			startRecording.setDisable(true);
+			pauseRecording.setDisable(false);
+			stopRecording.setDisable(false);
+			if (RecorderState.isStopped()) {
 				resMultiplierSpinner.setDisable(true);
 				GlobalVariables.setResMultiplier(resMultiplierSpinner.getValue());
 				recorder.startRecording(this);
@@ -178,13 +182,18 @@ public class JFXMain extends Application {
 		});
 
 		pauseRecording.setOnAction(event -> recorder.pauseRecording(pauseRecording));
+		pauseRecording.setDisable(true);
 
 		stopRecording.setOnAction(event -> {
 			if (recorder.stopRecording(primaryStage)) {
+				startRecording.setDisable(false);
+				pauseRecording.setDisable(true);
+				stopRecording.setDisable(true);
 				menuBar.setOpacity(1);
 				resMultiplierSpinner.setDisable(false);
 			}
 		});
+		stopRecording.setDisable(true);
 
 		fileMenu.getItems().addAll(resetKeyboardLayout, new SeparatorMenuItem(), startRecording, pauseRecording, stopRecording);
 		return fileMenu;
@@ -213,7 +222,7 @@ public class JFXMain extends Application {
 	private void setStageListeners(Stage stage) {
 		// Cleanup if window is closed, ensure all threads end
 		stage.setOnCloseRequest(event -> {
-			Recorder.state = State.STOPPED;
+			RecorderState.setState(RecorderState.STOPPED);
 			try {
 				GlobalScreen.unregisterNativeHook();
 			} catch (NativeHookException e) {

@@ -1,7 +1,7 @@
 package iart.multimonitor;
 
 import iart.GlobalVariables;
-import iart.multimonitor.transformers.ScreenCoordinateTransformer;
+import iart.multimonitor.transformers.TransformableScreen;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
@@ -36,7 +36,7 @@ public class MultiMonitorSettings {
 	}
 
 	private static List<Node> createScreenPreviews(Scale boundsScaling) {
-		return ScreenCoordinateTransformer.getInstance().getScreens().stream().map(screen -> {
+		return TransformableScreen.getTransformableScreens().stream().map(screen -> {
 			Rectangle realScreenBounds = new Rectangle(screen.getRealBounds().getMinX(), screen.getRealBounds().getMinY(),
 													   screen.getRealBounds().getWidth(), screen.getRealBounds().getHeight());
 			Rectangle transformedBounds = new Rectangle(screen.getTransformedBounds().getMinX(), screen.getTransformedBounds().getMinY(),

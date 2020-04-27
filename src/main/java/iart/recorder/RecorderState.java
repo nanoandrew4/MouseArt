@@ -16,6 +16,34 @@ package iart.recorder;
  * <p>
  * STOPPED indicates the program has stopped tracking the cursor and is finalizing the image, to save it and start anew.
  */
-public enum State {
-	PRE_RECORDING, RECORDING, CALIBRATING, PAUSED, STOPPED
+public enum RecorderState {
+	PRE_RECORDING, RECORDING, CALIBRATING, PAUSED, STOPPED;
+
+	private static RecorderState state = STOPPED;
+
+	public static RecorderState getState() {
+		return state;
+	}
+
+	public static void setState(RecorderState state) {
+		if (state == null)
+			throw new IllegalStateException("RecorderState instance cannot be set to null");
+		RecorderState.state = state;
+	}
+
+	public static boolean isRecording() {
+		return state.equals(RECORDING);
+	}
+
+	public static boolean isPaused() {
+		return state.equals(PAUSED);
+	}
+
+	public static boolean isStopped() {
+		return state.equals(STOPPED);
+	}
+
+	public static boolean isCalibrating() {
+		return state.equals(CALIBRATING);
+	}
 }

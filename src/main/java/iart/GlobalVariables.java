@@ -2,6 +2,7 @@ package iart;
 
 public class GlobalVariables {
 	public static double screenWidth, screenHeight;
+	public static boolean transformMousePosition = false;
 	private static double resMultiplier = 1;
 
 	private static double virtualScreenWidth, virtualScreenHeight;
